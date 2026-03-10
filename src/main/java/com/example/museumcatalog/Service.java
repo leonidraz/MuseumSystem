@@ -1,6 +1,9 @@
 package com.example.museumcatalog;
 
+import com.example.museumcatalog.Models.User;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
@@ -8,14 +11,21 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class Service {
+    private static User currentUser;
 
-    public void openForm(String fileName, String nameForm) throws IOException {
+    public static User getCurrentUser() {
+        return currentUser;
+    }
+
+    public static void setCurrentUser(User currentUser) {
+        Service.currentUser = currentUser;
+    }
+
+    public void switchScene(String fileName, String nameForm) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("fxml/" + fileName + ".fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        Stage stage = new Stage();
-        stage.setTitle(nameForm);
-        stage.setScene(scene);
-        stage.show();
+        MainApplication.getCurrentStage().setScene(new Scene(fxmlLoader.load()));
+        MainApplication.getCurrentStage().setTitle(nameForm);
+        MainApplication.getCurrentStage().show();
     }
 
     public void openAlert(Alert.AlertType type, String msg, String title){
