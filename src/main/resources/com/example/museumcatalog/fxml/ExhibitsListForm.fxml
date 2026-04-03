@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="868.0" prefWidth="1920.0" styleClass="app-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.ExhibitsListFormController">
+
+    <left>
+        <VBox prefHeight="954.0" prefWidth="350.0" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
+            <children>
+                <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="15.0" prefWidth="109.0" styleClass="subtitle" text="Фильтры" />
+
+                <!-- Фильтры -->
+                <VBox spacing="15.0">
+                    <children>
+                        <VBox prefHeight="24.0" prefWidth="300.0" spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Статус" />
+                                <ComboBox fx:id="filterStatus" prefWidth="300.0" promptText="Все статусы" styleClass="input-combo" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Фонд" />
+                                <ComboBox fx:id="filterFund" prefWidth="300.0" promptText="Все фонды" styleClass="input-combo" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Коллекция" />
+                                <ComboBox fx:id="filterCollection" prefWidth="300.0" promptText="Все коллекции" styleClass="input-combo" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Период поступления" />
+                                <HBox spacing="10.0">
+                                    <children>
+                                        <DatePicker fx:id="dateFrom" prefWidth="140.0" promptText="С" styleClass="input-field-small" />
+                                        <Label style="-fx-font-size: 20px; -fx-text-fill: #9E9E9E;" text="–" />
+                                        <DatePicker fx:id="dateTo" prefWidth="140.0" promptText="По" styleClass="input-field-small" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <Separator styleClass="separator" />
+
+                <!-- Действия -->
+                <VBox spacing="15.0">
+                    <children>
+                        <Label styleClass="section-title" text="Действия" />
+
+                        <Button fx:id="addBtn" mnemonicParsing="false" prefHeight="55.0" text="Добавить экспонат">
+                            <effect>
+                                <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                            </effect>
+                     <styleClass>
+                        <String fx:value="btn-panel-details" />
+                        <String fx:value="btn-add" />
+                     </styleClass>
+                        </Button>
+                    </children>
+                </VBox>
+            </children>
+            <BorderPane.margin>
+                <Insets />
+            </BorderPane.margin>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox fx:id="centerVBox" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
+            <children>
+                <!-- Заголовок + поиск -->
+                <HBox alignment="TOP_CENTER" spacing="20.0">
+                    <children>
+                        <Label prefHeight="0.0" prefWidth="262.0" styleClass="title" text="Список экспонатов" />
+                        <Label fx:id="totalCountLabel" styleClass="counter-badge" text="Всего: " />
+
+                        <Region HBox.hgrow="ALWAYS" />
+
+                        <TextField fx:id="search" prefHeight="48.0" prefWidth="492.0" promptText="Поиск по названию, номеру КП" styleClass="input-field" />
+                    </children>
+                </HBox>
+
+                <!-- Панель управления таблицей -->
+                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                    <children>
+                        <Button fx:id="updateTableBtn" mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Обновить" />
+                        <Button mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Сортировка" />
+                        <Region HBox.hgrow="ALWAYS" />
+                    </children>
+                </HBox>
+
+                <!-- Таблица экспонатов -->
+                <TableView fx:id="exhibitsTable" prefHeight="680.0" styleClass="table">
+                    <columns>
+                        <TableColumn fx:id="nameColumn" text="Название" />
+                        <TableColumn fx:id="descColumn" text="Описание" />
+                        <TableColumn fx:id="lengthColumn" text="Длина" />
+                        <TableColumn fx:id="widthColumn" text="Ширина" />
+                        <TableColumn fx:id="heightColumn" text="Высота" />
+                        <TableColumn fx:id="unitSizesColumn" text="Ед.измерения" />
+                        <TableColumn fx:id="weightColumn" text="Вес" />
+                        <TableColumn fx:id="unitWeightColumn" text="Ед.измерения" />
+                        <TableColumn fx:id="colorColumn" text="Цвет" />
+                        <TableColumn fx:id="materialColumn" text="Материал" />
+                        <TableColumn fx:id="datingMaterialColumn" text="Датировка материала" />
+                        <TableColumn fx:id="techniqueColumn" text="Техника" />
+                        <TableColumn fx:id="conditionColumn" text="Состояние" />
+                        <TableColumn fx:id="sourceColumn" text="Источник" />
+                        <TableColumn fx:id="arrivalDateColumn" text="Дата поступления" />
+                        <TableColumn fx:id="inscriptionsColumn" text="Надписи" />
+                        <TableColumn fx:id="placeOfProductionColumn" text="Место производства" />
+                        <TableColumn fx:id="productionTimeColumn" text="Время производства" />
+                        <TableColumn fx:id="publicationColumn" text="Публикация" />
+                        <TableColumn fx:id="usageColumn" text="Использование" />
+                        <TableColumn fx:id="museumValueColumn" text="Музейное значение" />
+                        <TableColumn fx:id="statusColumn" text="Статус" />
+                        <TableColumn fx:id="fundColumn" text="Фонд" />
+                        <TableColumn fx:id="collectionColumn" text="Коллекция" />
+                        <TableColumn fx:id="numberKPColumn" text="Номер КП" />
+                    </columns>
+                    <placeholder>
+                        <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 40px;">
+                            <children>
+                                <Rectangle arcHeight="20" arcWidth="20" fill="#E0E0E0" height="80.0" width="80.0" />
+                                <Label styleClass="placeholder" text="Экспонаты не найдены" />
+                                <Label alignment="CENTER" styleClass="placeholder-small" text="Измените параметры поиска или фильтрации" wrapText="true" />
+                            </children>
+                        </VBox>
+                    </placeholder>
+                </TableView>
+            </children>
+            <BorderPane.margin>
+                <Insets left="20.0" right="20.0" />
+            </BorderPane.margin>
+        </VBox>
+    </center>
+
+    <right>
+        <VBox fx:id="detailsCard" minWidth="10.0" prefHeight="868.0" prefWidth="443.0" spacing="15.0" BorderPane.alignment="CENTER">
+            <children>
+                <VBox fx:id="contentDetailsCard" prefHeight="837.0" prefWidth="413.0">
+                    <children>
+                        <HBox alignment="CENTER" prefHeight="14.0" prefWidth="413.0" styleClass="header-panel-details">
+                            <children>
+                                <Label prefHeight="1.0" prefWidth="211.0" styleClass="subtitle" text="Детали экспоната" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Button fx:id="closeDetailsCard" styleClass="btn-transparent" text="✕" />
+                            </children>
+                        </HBox>
+
+                        <!-- Карточка экспоната -->
+                        <VBox styleClass="card">
+                            <children>
+                                <!-- Заголовок: фото + данные -->
+                                <HBox spacing="15.0" style="-fx-padding: 15px;">
+                                    <children>
+                              <ImageView fx:id="imageView" fitHeight="104.0" fitWidth="116.0" pickOnBounds="true" preserveRatio="true" styleClass="photo-placeholder">
+                                 <image>
+                                    <Image url="@../images/picture.png" />
+                                 </image></ImageView>
+
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Label fx:id="name" maxWidth="275.0" styleClass="value-name" text="Экспонат не выбран" wrapText="true" />
+
+                                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                                    <children>
+                                                        <Circle fx:id="statusCircle" radius="5.0" styleClass="status-indicator" />
+                                                        <Label fx:id="status" styleClass="status-value" text="—" />
+                                                    </children>
+                                                </HBox>
+
+                                                <Label fx:id="KPPNumber" styleClass="value" text="—" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
+
+                                <Separator styleClass="separator" />
+
+                                <!-- Вкладки -->
+                                <TabPane prefHeight="526.0" styleClass="tab-pane">
+                                    <!-- Вкладка 1: Основное -->
+                                    <Tab closable="false" text="Основное">
+                                        <VBox spacing="14.0" style="-fx-padding: 18px;" styleClass="tab-vbox-pane">
+                                            <children>
+                                                <VBox spacing="4.0">
+                                                    <children>
+                                                        <Label styleClass="field-label-small" text="Дата поступления" />
+                                                        <Label fx:id="arrivalDate" styleClass="value-date" text="—" wrapText="true" />
+                                                    </children>
+                                                </VBox>
+
+                                                <VBox spacing="4.0">
+                                                    <children>
+                                                        <Label styleClass="field-label-small" text="Описание" />
+                                                        <Label fx:id="description" styleClass="value" text="—" wrapText="true" />
+                                                    </children>
+                                                </VBox>
+
+                                                <GridPane hgap="15.0" vgap="10.0">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="104.0" minWidth="10.0" prefWidth="84.0" />
+                                                        <ColumnConstraints hgrow="ALWAYS" maxWidth="276.0" minWidth="10.0" prefWidth="276.0" />
+                                                    </columnConstraints>
+                                                    <children>
+                                                        <Label prefHeight="19.0" prefWidth="157.0" styleClass="field-label-small" text="Фонд:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                                        <Label fx:id="fund" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                                        <Label prefHeight="19.0" prefWidth="140.0" styleClass="field-label-small" text="Коллекция:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                                        <Label fx:id="collection" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                                        <Label prefHeight="19.0" prefWidth="156.0" styleClass="field-label-small" text="Владелец:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                                        <Label fx:id="owner" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                    </children>
+                                       <rowConstraints>
+                                          <RowConstraints />
+                                          <RowConstraints />
+                                          <RowConstraints />
+                                       </rowConstraints>
+                                                </GridPane>
+                                            </children>
+                                        </VBox>
+                                    </Tab>
+
+                                    <!-- Вкладка 2: Характеристики -->
+                                    <Tab closable="false" text="Характеристики">
+                                        <VBox spacing="14.0" style="-fx-padding: 18px;" styleClass="tab-vbox-pane">
+                                            <children>
+                                                <GridPane hgap="15.0" vgap="11.0">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="85.0" />
+                                                        <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+                                                    </columnConstraints>
+                                                    <children>
+                                                        <Label prefHeight="19.0" prefWidth="143.0" styleClass="field-label-small" text="Размеры:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                                        <Label fx:id="dimensions" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                                        <Label prefHeight="19.0" prefWidth="167.0" styleClass="field-label-small" text="Вес:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                                        <Label fx:id="weight" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                                        <Label prefHeight="19.0" prefWidth="160.0" styleClass="field-label-small" text="Цвет:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                                        <Label fx:id="color" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                                        <Label prefHeight="19.0" prefWidth="139.0" styleClass="field-label-small" text="Материал:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                                        <Label fx:id="material" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                                        <Label prefHeight="19.0" prefWidth="144.0" styleClass="field-label-small" text="Датировка:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                                        <Label fx:id="dating" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                                                        <Label prefHeight="19.0" prefWidth="153.0" styleClass="field-label-small" text="Техника:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                                        <Label fx:id="technique" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                                    </children>
+                                       <rowConstraints>
+                                          <RowConstraints />
+                                          <RowConstraints />
+                                          <RowConstraints />
+                                          <RowConstraints />
+                                          <RowConstraints />
+                                          <RowConstraints />
+                                       </rowConstraints>
+                                                </GridPane>
+                                            </children>
+                                        </VBox>
+                                    </Tab>
+
+                                    <!-- Вкладка 3: Дополнительно -->
+                                    <Tab closable="false" text="Дополнительно">
+                                        <ScrollPane fitToWidth="true">
+                                            <content>
+                                                <VBox prefHeight="473.0" prefWidth="393.0" spacing="14.0" style="-fx-padding: 18px;" styleClass="tab-vbox-pane">
+                                                    <children>
+                                                        <VBox spacing="4.0">
+                                                            <children>
+                                                                <Label styleClass="field-label-small" text="Источник поступления" />
+                                                                <Label fx:id="source" styleClass="value" text="—" wrapText="true" />
+                                                            </children>
+                                                        </VBox>
+
+                                                        <VBox spacing="4.0">
+                                                            <children>
+                                                                <Label styleClass="field-label-small" text="Сохранность" />
+                                                                <HBox spacing="8.0">
+                                                                    <children>
+                                                                        <Label fx:id="condition" styleClass="value" text="—" wrapText="true" />
+                                                                    </children>
+                                                                </HBox>
+                                                            </children>
+                                                        </VBox>
+
+                                                        <VBox spacing="4.0">
+                                                            <children>
+                                                                <Label styleClass="field-label-small" text="Надписи" />
+                                                                <Label fx:id="inscriptions" styleClass="value" text="—" wrapText="true" />
+                                                            </children>
+                                                        </VBox>
+
+                                                        <GridPane hgap="15.0" vgap="10.0">
+                                                            <columnConstraints>
+                                                                <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="191.0" minWidth="10.0" prefWidth="147.0" />
+                                                                <ColumnConstraints hgrow="ALWAYS" maxWidth="275.0" minWidth="10.0" prefWidth="213.0" />
+                                                            </columnConstraints>
+                                                            <children>
+                                                                <Label prefHeight="19.0" prefWidth="268.0" styleClass="field-label-small" text="Место производства:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                                                <Label fx:id="productionPlace" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                                                <Label prefHeight="19.0" prefWidth="199.0" styleClass="field-label-small" text="Время производства:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                                                <Label fx:id="productionTime" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                                                <Label prefHeight="19.0" prefWidth="203.0" styleClass="field-label-small" text="Публикации:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                                                <Label fx:id="publications" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                                                <Label prefHeight="19.0" prefWidth="212.0" styleClass="field-label-small" text="Использование:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                                                <Label fx:id="usage" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                                                <Label prefHeight="19.0" prefWidth="256.0" styleClass="field-label-small" text="Музейное значение:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                                                <Label fx:id="museumValue" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                                            </children>
+                                             <rowConstraints>
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                                <RowConstraints />
+                                             </rowConstraints>
+                                                        </GridPane>
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </ScrollPane>
+                                    </Tab>
+                                </TabPane>
+
+                                <Separator styleClass="separator" />
+
+                                <!-- Кнопки действий (2 колонки) -->
+                                <GridPane hgap="10.0" style="-fx-padding: 12px;" vgap="10.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints vgrow="ALWAYS" />
+                                        <RowConstraints vgrow="ALWAYS" />
+                                    </rowConstraints>
+                                    <children>
+                                        <Button fx:id="editBtn" mnemonicParsing="false" text="Редактировать" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                 <styleClass>
+                                    <String fx:value="btn-panel-details" />
+                                    <String fx:value="btn-edit" />
+                                 </styleClass></Button>
+                                        <Button mnemonicParsing="false" text="Документы" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                 <styleClass>
+                                    <String fx:value="btn-panel-details" />
+                                    <String fx:value="btn-documents" />
+                                 </styleClass></Button>
+                                        <Button fx:id="archiveBtn" mnemonicParsing="false" text="Архивировать" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                 <styleClass>
+                                    <String fx:value="btn-panel-details" />
+                                    <String fx:value="btn-archive" />
+                                 </styleClass></Button>
+                                        <Button fx:id="deleteBtn" mnemonicParsing="false" text="Удалить" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                 <styleClass>
+                                    <String fx:value="btn-panel-details" />
+                                    <String fx:value="btn-delete" />
+                                 </styleClass></Button>
+                                    </children>
+                                </GridPane>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </children>
+            <BorderPane.margin>
+                <Insets />
+            </BorderPane.margin>
+         <styleClass>
+            <String fx:value="panel-details" />
+            <String fx:value="panel" />
+         </styleClass>
+        </VBox>
+    </right>
+</BorderPane>

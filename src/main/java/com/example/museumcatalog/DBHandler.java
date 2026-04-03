@@ -2,10 +2,7 @@ package com.example.museumcatalog;
 
 import javafx.scene.control.Alert;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DBHandler {
 
@@ -22,19 +19,35 @@ public class DBHandler {
         }
     }
 
-    public static ResultSet executeQuery(String query) throws SQLException {
+    public static ResultSet executeQuery(String query, Object...params) throws SQLException {
         if (connection == null || connection.isClosed()) {
             System.out.println("Подключение к БД закрыто!");
             return null;
         }
-        return connection.createStatement().executeQuery(query);
+        PreparedStatement stmt = connection.prepareStatement(query);
+
+        if (params != null) {
+            for (int i = 0; i< params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+        }
+        return stmt.executeQuery();
     }
 
-    public static int executeUpdate(String query) throws SQLException {
+    public static int executeUpdate(String query, Object... params) throws SQLException {
         if (connection == null || connection.isClosed()) {
             System.out.println("Подключение к БД закрыто!");
             return 0;
         }
-        return connection.createStatement().executeUpdate(query);
+
+        PreparedStatement stmt = connection.prepareStatement(query);
+
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+        }
+
+        return stmt.executeUpdate();
     }
 }

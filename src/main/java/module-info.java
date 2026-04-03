@@ -9,5 +9,6 @@ module com.example.museumcatalog {
     exports com.example.museumcatalog;
 
     exports com.example.museumcatalog.Controllers;
+    opens com.example.museumcatalog.Models to javafx.base, javafx.fxml;
     opens com.example.museumcatalog.Controllers to javafx.fxml;
 }

@@ -12,13 +12,14 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("fxml/" + "authorizationForm.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("fxml/" + "АuthorizationForm.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("Авторизация");
         stage.setScene(scene);
         stage.show();
 
         setCurrentStage(stage);
+        System.out.println(stage.getWidth() + " " + stage.getHeight());
     }
 
     public static Stage getCurrentStage() {

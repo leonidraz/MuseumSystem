@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class authorizationFormController {
+public class AuthorizationFormController {
 
     @FXML
     private Button enterBtn;
@@ -43,7 +43,7 @@ public class authorizationFormController {
                 Service.setCurrentUser(user);
                 if (Service.getCurrentUser().getStatus().equals("активен")) {
                     try {
-                        service.switchScene("mainForm", "Главная");
+                        service.switchScene("BaseForm", "Главная");
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -61,12 +61,12 @@ public class authorizationFormController {
     }
 
     private User checkUser(String login, String password) throws SQLException {
-        String query = String.format("SELECT r.role_name , e.last_name, e.first_name, e.middle_name, us.status_name\n" +
+        String query = String.format("select r.role_name , e.last_name, e.first_name, e.middle_name, us.status_name\n" +
                 "FROM users u\n" +
                 "inner join roles r on u.role_id = r.id\n" +
                 "inner join employees e on u.employee_id = e.id\n" +
                 "inner join user_statuses us on u.status_id  = us.id\n" +
-                "where u.login = '%s' and u.\"password\" = '%s'", login, password);
+                "where u.login = '%s' and \"password\" = crypt('%s', \"password\")", login, password);
 
         ResultSet rs = DBHandler.executeQuery(query);
         if (rs.next()) {
