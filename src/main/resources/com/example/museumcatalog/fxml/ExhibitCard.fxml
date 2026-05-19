@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="rootCard" alignment="CENTER" prefHeight="335.0" prefWidth="320" spacing="15" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 24px; -fx-min-width: 320px; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.ExhibitCardController">
+
+    <children>
+
+        <ImageView fx:id="imageView" fitHeight="160" fitWidth="222.0" preserveRatio="false">
+         <image>
+            <Image url="@../images/picture.png" />
+         </image></ImageView>
+
+        <Label fx:id="nameLabel" style="-fx-font-weight: bold;                       -fx-font-size: 20px;                       -fx-text-fill: #333333;" />
+
+        <Label fx:id="dateLabel" style="-fx-font-size: 15px;                       -fx-text-fill: #666666;" />
+
+        <Label fx:id="statusLabel" style="-fx-font-size: 15px;                       -fx-text-fill: #607D8B;                       -fx-font-weight: bold;" />
+
+    </children>
+
+</VBox>

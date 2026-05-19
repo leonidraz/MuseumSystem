@@ -73,13 +73,19 @@
                 </VBox>
 
                 <Separator styleClass="separator" />
+            <VBox spacing="10.0">
+               <children>
+                  <Label styleClass="field-label" text="Владелец" />
+                  <TextField fx:id="ownerSearch" prefWidth="300.0" promptText="ФИО владельца" styleClass="input-field" />
+               </children>
+            </VBox>
 
                 <!-- Действия -->
                 <VBox spacing="15.0">
                     <children>
                         <Label styleClass="section-title" text="Действия" />
 
-                        <Button fx:id="addBtn" mnemonicParsing="false" prefHeight="55.0" text="Добавить экспонат">
+                        <Button fx:id="addBtn" mnemonicParsing="false" prefHeight="55.0" text="Добавить предмет">
                             <effect>
                                 <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
                             </effect>
@@ -103,7 +109,7 @@
                 <!-- Заголовок + поиск -->
                 <HBox alignment="TOP_CENTER" spacing="20.0">
                     <children>
-                        <Label prefHeight="0.0" prefWidth="262.0" styleClass="title" text="Список экспонатов" />
+                        <Label prefHeight="0.0" prefWidth="262.0" styleClass="title" text="Список предметов" />
                         <Label fx:id="totalCountLabel" styleClass="counter-badge" text="Всего: " />
 
                         <Region HBox.hgrow="ALWAYS" />
@@ -115,8 +121,7 @@
                 <!-- Панель управления таблицей -->
                 <HBox alignment="CENTER_LEFT" spacing="15.0">
                     <children>
-                        <Button fx:id="updateTableBtn" mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Обновить" />
-                        <Button mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Сортировка" />
+                        <Button fx:id="refreshBtn" mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Обновить" />
                         <Region HBox.hgrow="ALWAYS" />
                     </children>
                 </HBox>
@@ -126,6 +131,7 @@
                     <columns>
                         <TableColumn fx:id="nameColumn" text="Название" />
                         <TableColumn fx:id="descColumn" text="Описание" />
+                        <TableColumn fx:id="ownerShortName" prefWidth="180" text="Владелец" />
                         <TableColumn fx:id="lengthColumn" text="Длина" />
                         <TableColumn fx:id="widthColumn" text="Ширина" />
                         <TableColumn fx:id="heightColumn" text="Высота" />
@@ -154,7 +160,7 @@
                         <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 40px;">
                             <children>
                                 <Rectangle arcHeight="20" arcWidth="20" fill="#E0E0E0" height="80.0" width="80.0" />
-                                <Label styleClass="placeholder" text="Экспонаты не найдены" />
+                                <Label styleClass="placeholder" text="Предметы не найдены" />
                                 <Label alignment="CENTER" styleClass="placeholder-small" text="Измените параметры поиска или фильтрации" wrapText="true" />
                             </children>
                         </VBox>
@@ -174,7 +180,7 @@
                     <children>
                         <HBox alignment="CENTER" prefHeight="14.0" prefWidth="413.0" styleClass="header-panel-details">
                             <children>
-                                <Label prefHeight="1.0" prefWidth="211.0" styleClass="subtitle" text="Детали экспоната" />
+                                <Label prefHeight="1.0" prefWidth="211.0" styleClass="subtitle" text="Детали предмета" />
                                 <Region HBox.hgrow="ALWAYS" />
                                 <Button fx:id="closeDetailsCard" styleClass="btn-transparent" text="✕" />
                             </children>
@@ -193,7 +199,7 @@
 
                                         <VBox spacing="6.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label fx:id="name" maxWidth="275.0" styleClass="value-name" text="Экспонат не выбран" wrapText="true" />
+                                                <Label fx:id="name" maxWidth="275.0" styleClass="value-name" text="Предмет не выбран" wrapText="true" />
 
                                                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                                                     <children>
@@ -278,7 +284,7 @@
                                                         <Label fx:id="material" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
                                                         <Label prefHeight="19.0" prefWidth="144.0" styleClass="field-label-small" text="Датировка:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                                                        <Label fx:id="dating" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                                        <Label fx:id="datingMaterial" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
                                                         <Label prefHeight="19.0" prefWidth="153.0" styleClass="field-label-small" text="Техника:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
                                                         <Label fx:id="technique" styleClass="value" text="—" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />

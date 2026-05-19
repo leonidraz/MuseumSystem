@@ -89,6 +89,14 @@
     -fx-padding: 15px;
 }
 
+.panel-details-closed {
+    -fx-background-color: #7CB4CF;
+}
+
+.panel-details-open {
+    -fx-background-color: #EBEFF0;
+}
+
 .header-panel-details {
     -fx-padding: 0 0 7 0;
 }
@@ -186,7 +194,7 @@
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-padding: 6 12;
-    -fx-pref-width: 190px;
+    -fx-pref-width: 210px;
     -fx-pref-height: 42px;
 }
 
@@ -324,10 +332,6 @@
     -fx-stroke-width: 1px;
 }
 
-.status-indicator {
-    -fx-fill: #4CAF50;
-}
-
 .status-value {
     -fx-text-fill: #4CAF50;
     -fx-font-weight: bold;
@@ -345,3 +349,34 @@
     -fx-font-size: 20px;
     -fx-text-fill: #666666;
 }
+
+.input-field2 {
+    -fx-background-color: white;
+    -fx-border-color: #CCCCCC;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-padding: 12px;
+    -fx-font-size: 17px;
+}
+
+.input-combo {
+    -fx-background-color: white;
+    -fx-border-color: #CCCCCC;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-font-size: 17px;
+    -fx-padding: 6px;
+}
+
+.error-field {
+    -fx-border-color: red;
+    -fx-border-width: 2;
+    -fx-background-color: #ffe6e6;
+}
+
+.table {
+    -fx-background-color: white;
+    -fx-border-radius: 8px;
+    -fx-font-size: 15px;
+}
+

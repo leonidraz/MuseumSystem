@@ -3,6 +3,10 @@ module com.example.museumcatalog {
     requires javafx.fxml;
     requires java.sql;
     requires org.postgresql.jdbc;
+    requires java.desktop;
+    requires jbcrypt;
+    requires org.docx4j.core;
+    requires jakarta.xml.bind;
 
 
     opens com.example.museumcatalog to javafx.fxml;

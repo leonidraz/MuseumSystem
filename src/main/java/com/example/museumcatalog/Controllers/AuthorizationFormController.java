@@ -3,6 +3,8 @@ package com.example.museumcatalog.Controllers;
 import com.example.museumcatalog.DBHandler;
 import com.example.museumcatalog.Models.User;
 import com.example.museumcatalog.Service;
+import com.example.museumcatalog.Storages.AuthLogRepository;
+import com.example.museumcatalog.Storages.UserRepository;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -31,15 +33,24 @@ public class AuthorizationFormController {
             String password = passwordTF.getText();
 
             User user = null;
+            boolean success = false;
 
             try {
                 DBHandler.setConnection();
-                user = checkUser(login, password);
+                user = UserRepository.checkUser(login, password);
             } catch (SQLException | ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
 
             if (user != null) {
+                success = true;
+
+                try {
+                    AuthLogRepository.addLog(user, login, success, "LOGIN");
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
                 Service.setCurrentUser(user);
                 if (Service.getCurrentUser().getStatus().equals("активен")) {
                     try {
@@ -55,29 +66,13 @@ public class AuthorizationFormController {
                     service.openAlert(Alert.AlertType.WARNING, "Заполните, пожалуйста, все поля!", "Предупреждение!");
                     return;
                 }
+                try {
+                    AuthLogRepository.addLog(null, login, success, "LOGIN");
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 service.openAlert(Alert.AlertType.WARNING, "Неверный логин или пароль!", "Предупреждение!");
             }
         });
-    }
-
-    private User checkUser(String login, String password) throws SQLException {
-        String query = String.format("select r.role_name , e.last_name, e.first_name, e.middle_name, us.status_name\n" +
-                "FROM users u\n" +
-                "inner join roles r on u.role_id = r.id\n" +
-                "inner join employees e on u.employee_id = e.id\n" +
-                "inner join user_statuses us on u.status_id  = us.id\n" +
-                "where u.login = '%s' and \"password\" = crypt('%s', \"password\")", login, password);
-
-        ResultSet rs = DBHandler.executeQuery(query);
-        if (rs.next()) {
-            String role = rs.getString("role_name");
-            String lastName = rs.getString("last_name");
-            String firstName = rs.getString("first_name");
-            String middleName = rs.getString("middle_name");
-            String status = rs.getString("status_name");
-
-            return new User(role, lastName, firstName, middleName, status);
-        }
-        return null;
     }
 }

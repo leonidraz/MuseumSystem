@@ -1,7 +1,9 @@
 package com.example.museumcatalog.Controllers;
 
 import com.example.museumcatalog.MainApplication;
+import com.example.museumcatalog.Models.User;
 import com.example.museumcatalog.Service;
+import com.example.museumcatalog.Storages.AuthLogRepository;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -10,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Objects;
 
 public class BaseFormController {
@@ -23,7 +26,7 @@ public class BaseFormController {
     private Label employeesLabel;
 
     @FXML
-    private Label exhibitsLabel;
+    public Label exhibitsLabel;
 
     @FXML
     private Button exitLabel;
@@ -41,6 +44,9 @@ public class BaseFormController {
     private Label ownersLabel;
 
     @FXML
+    private Label usersLabel;
+
+    @FXML
     private Label roleLabel;
 
     @FXML
@@ -51,12 +57,32 @@ public class BaseFormController {
     Service service = new Service();
 
     public void initialize() throws IOException {
+        Service.setBaseFormController(this);
         activeLabel = mainLabel;
         mainLabel.getStyleClass().add("nav-item-active");
         switchContent("MainForm");
+        Service.setUserChangedListener(() -> {
+            updateUserInfo(Service.getCurrentUser());
+        });
+
+        updateUserInfo(Service.getCurrentUser());
         exitLabel.setOnAction(actionEvent -> {
+            User currentUser = Service.getCurrentUser();
+
             try {
-                Service.setCurrentUser(null);
+                if (currentUser != null) {
+                    AuthLogRepository.addLog(
+                            currentUser,
+                            currentUser.getLogin(),
+                            true,
+                            "LOGOUT"
+                    );
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            Service.setCurrentUser(null);
+            try {
                 service.switchScene("АuthorizationForm", "Авторизация");
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -73,6 +99,7 @@ public class BaseFormController {
         });
 
         exhibitsLabel.setOnMouseClicked(e -> {
+            Service.setExhibit(null);
             setActive(exhibitsLabel);
             try {
                 switchContent("ExhibitsListForm");
@@ -92,25 +119,61 @@ public class BaseFormController {
 
         guidesLabel.setOnMouseClicked(e -> {
             setActive(guidesLabel);
+            try {
+                switchContent("ReferenceBooksForm");
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         employeesLabel.setOnMouseClicked(e -> {
             setActive(employeesLabel);
+            try {
+                switchContent("EmployeesListForm");
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        usersLabel.setOnMouseClicked(e -> {
+            setActive(usersLabel);
+            try {
+                switchContent("UsersListForm");
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         ownersLabel.setOnMouseClicked(e -> {
             setActive(ownersLabel);
+            try {
+                switchContent("OwnersListForm");
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         });
+    }
 
-        if (Service.getCurrentUser() != null) {
-            fioLabel.setText(Service.getCurrentUser().getLastName() + " " +
-                    Service.getCurrentUser().getFirstName().charAt(0) + "." +
-                    Service.getCurrentUser().getMiddleName().charAt(0) + ".");
-            roleLabel.setText(Service.getCurrentUser().getRole());
+    private void updateUserInfo(User user) {
+
+        if (user == null) {
+            fioLabel.setText("— — —");
+            roleLabel.setText("");
+            return;
+        }
+
+        roleLabel.setText(user.getRole());
+
+        String fio = user.getEmployeeFio();
+
+        if (fio != null && !fio.isEmpty()) {
+            fioLabel.setText(user.getShortFio());
+        } else {
+            fioLabel.setText("— — —");
         }
     }
 
-    private void setActive(Label clickedLabel) {
+    public void setActive(Label clickedLabel) {
         if (activeLabel != null) {
             activeLabel.getStyleClass().remove("nav-item-active");
         }

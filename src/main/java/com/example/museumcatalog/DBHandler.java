@@ -13,7 +13,7 @@ public class DBHandler {
     public static void setConnection() throws ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
         try {
-            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/MuseumDB", "postgres", "13068");
+            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/MuseumDB2", "postgres", "13068");
         } catch (SQLException e) {
             service.openAlert(Alert.AlertType.ERROR, "Нет подключения к БД!", "Ошибка!");
         }
@@ -37,7 +37,7 @@ public class DBHandler {
     public static int executeUpdate(String query, Object... params) throws SQLException {
         if (connection == null || connection.isClosed()) {
             System.out.println("Подключение к БД закрыто!");
-            return 0;
+            return -1;
         }
 
         PreparedStatement stmt = connection.prepareStatement(query);
@@ -49,5 +49,56 @@ public class DBHandler {
         }
 
         return stmt.executeUpdate();
+    }
+
+//    public static int executeInsertReturningId(String query, Object... params) throws SQLException {
+//
+//        if (connection == null || connection.isClosed()) {
+//            System.out.println("Подключение к БД закрыто!");
+//            return -1;
+//        }
+//
+//        try (PreparedStatement stmt =
+//                     connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+//
+//            if (params != null) {
+//                for (int i = 0; i < params.length; i++) {
+//                    stmt.setObject(i + 1, params[i]);
+//                }
+//            }
+//
+//            stmt.executeUpdate();
+//
+//            try (ResultSet rs = stmt.getGeneratedKeys()) {
+//                if (rs.next()) {
+//                    return rs.getInt(1);
+//                }
+//            }
+//
+//            return -1;
+//
+//        }
+//    }
+
+    public static Object executeReturning(String sql, String column, Object... params) throws SQLException {
+
+        if (connection == null || connection.isClosed()) {
+            throw new SQLException("Подключение к БД закрыто!");
+        }
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getObject(column);
+                }
+            }
+
+            return -1;
+        }
     }
 }

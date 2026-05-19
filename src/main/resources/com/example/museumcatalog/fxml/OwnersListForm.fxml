@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="868.0" prefWidth="1920.0" styleClass="app-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.OwnersListFormController">
+
+    <left>
+        <VBox prefHeight="954.0" prefWidth="350.0" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
+            <children>
+                <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="40.0" styleClass="subtitle" text="Поиск по" />
+
+                <!-- Фильтры -->
+                <VBox spacing="15.0">
+                    <children>
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="ФИО" />
+                                <TextField fx:id="fioSearch" prefWidth="300.0" promptText="Фамилия, имя или отчество" styleClass="input-field" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Паспортные данные" />
+                                <HBox spacing="10.0">
+                                    <children>
+                                        <TextField fx:id="passportSeriesSearch" prefWidth="140.0" promptText="Серия">
+                                 <styleClass>
+                                    <String fx:value="input-field-small" />
+                                    <String fx:value="input-field" />
+                                 </styleClass></TextField>
+                                        <TextField fx:id="passportNumberSearch" prefHeight="47.0" prefWidth="150.0" promptText="Номер">
+                                 <styleClass>
+                                    <String fx:value="input-field-small" />
+                                    <String fx:value="input-field" />
+                                 </styleClass></TextField>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Телефон" />
+                                <TextField fx:id="phoneSearch" prefWidth="300.0" promptText="Номер телефона" styleClass="input-field" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Адрес" />
+                                <TextField fx:id="addressSearch" prefWidth="300.0" promptText="Часть адреса" styleClass="input-field" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <Separator styleClass="separator" />
+
+                <!-- Действия -->
+                <VBox spacing="15.0">
+                    <children>
+                        <Label styleClass="section-title" text="Действия" />
+
+                        <Button fx:id="addOwnerBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="227.0" text="Добавить владельца">
+                            <effect>
+                                <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                            </effect>
+                     <styleClass>
+                        <String fx:value="btn-add" />
+                        <String fx:value="btn-panel-details" />
+                     </styleClass>
+                        </Button>
+                  <Button fx:id="editOwnerBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="222.0" text="Редактировать">
+                     <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                     </effect>
+                     <styleClass>
+                        <String fx:value="btn-edit" />
+                        <String fx:value="btn-panel-details" />
+                     </styleClass>
+                  </Button>
+                  <Button fx:id="deleteOwnerBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="342.0" text="Удалить">
+                     <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                     </effect>
+                     <styleClass>
+                        <String fx:value="btn-delete" />
+                        <String fx:value="btn-panel-details" />
+                     </styleClass>
+                  </Button>
+                    </children>
+                </VBox>
+            </children>
+            <BorderPane.margin>
+                <Insets />
+            </BorderPane.margin>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
+            <children>
+                <!-- Заголовок + поиск -->
+                <HBox alignment="CENTER_LEFT" spacing="20.0">
+                    <children>
+                        <Label styleClass="title" text="Список владельцев" />
+                        <Label fx:id="totalCountLabel" styleClass="counter-badge" text="Всего: " />
+
+                        <Region HBox.hgrow="ALWAYS" />
+
+                        <TextField fx:id="globalSearch" prefHeight="48.0" prefWidth="425.0" promptText="Быстрый поиск по всем полям..." styleClass="input-field" />
+                    </children>
+                </HBox>
+
+                <!-- Панель управления таблицей -->
+                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                    <children>
+                        <Button fx:id="refreshBtn" mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="🔄 Обновить" />
+                        <Region HBox.hgrow="ALWAYS" />
+                    </children>
+                </HBox>
+
+                <!-- Таблица владельцев -->
+                <TableView fx:id="ownersTable" prefHeight="680.0" styleClass="table">
+                    <columns>
+                        <TableColumn fx:id="fioColumn" prefWidth="130" text="ФИО" />
+                        <TableColumn fx:id="passportColumn" prefWidth="140" text="Паспорт" />
+                        <TableColumn fx:id="phoneColumn" prefWidth="130" text="Телефон" />
+                        <TableColumn fx:id="addressColumn" prefWidth="250" text="Адрес" />
+                        <TableColumn fx:id="issuedByColumn" prefWidth="200" text="Кем выдан" />
+                        <TableColumn fx:id="dateOfIssueColumn" prefWidth="120" text="Дата выдачи" />
+                        <TableColumn fx:id="noticeColumn" prefWidth="300" text="Примечание" />
+                    </columns>
+                    <placeholder>
+                        <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 40px;">
+                            <children>
+                                <Rectangle arcHeight="20" arcWidth="20" fill="#E0E0E0" height="80.0" width="80.0" />
+                                <Label styleClass="placeholder" text="Владельцы не найдены" />
+                                <Label alignment="CENTER" styleClass="placeholder-small" text="Измените параметры поиска или фильтрации" wrapText="true" />
+                            </children>
+                        </VBox>
+                    </placeholder>
+                </TableView>
+            </children>
+            <BorderPane.margin>
+                <Insets left="20.0" />
+            </BorderPane.margin>
+        </VBox>
+    </center>
+</BorderPane>

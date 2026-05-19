@@ -1,6 +1,7 @@
 package com.example.museumcatalog.Models;
 
 import javafx.beans.property.*;
+import javafx.beans.value.ObservableValue;
 
 import java.time.LocalDate;
 
@@ -13,7 +14,7 @@ public class Exhibit {
     private final DoubleProperty length = new SimpleDoubleProperty();
     private final DoubleProperty width = new SimpleDoubleProperty();
     private final DoubleProperty height = new SimpleDoubleProperty();
-    private final DoubleProperty weight = new SimpleDoubleProperty();
+    private final ObjectProperty<Double> weight = new SimpleObjectProperty<>();
     private final StringProperty unitSizes = new SimpleStringProperty();
     private final StringProperty unitWeight = new SimpleStringProperty();
     private final StringProperty color = new SimpleStringProperty();
@@ -22,7 +23,7 @@ public class Exhibit {
     private final StringProperty technique = new SimpleStringProperty();
     private final StringProperty condition = new SimpleStringProperty();
     private final StringProperty source = new SimpleStringProperty();
-    private final StringProperty arrivalDate = new SimpleStringProperty();
+    private final ObjectProperty<LocalDate> arrivalDate = new SimpleObjectProperty<>();
     private final StringProperty inscriptions = new SimpleStringProperty();
     private final StringProperty placeOfProduction = new SimpleStringProperty();
     private final StringProperty productionTime = new SimpleStringProperty();
@@ -33,15 +34,27 @@ public class Exhibit {
     private final StringProperty fund = new SimpleStringProperty();
     private final StringProperty collection = new SimpleStringProperty();
     private final StringProperty numberKP = new SimpleStringProperty();
+    private final BooleanProperty selected = new SimpleBooleanProperty(false);
+    private final StringProperty ownerFio = new SimpleStringProperty();
+    private final ObjectProperty<Integer> ownerId = new SimpleObjectProperty<>();
+    private final StringProperty location = new SimpleStringProperty();
+    private final StringProperty conditionDetails = new SimpleStringProperty();
+
+    private BooleanProperty selectable = new SimpleBooleanProperty(true);
+
+    public Exhibit() {
+
+    }
 
     public Exhibit(int id, String photo, String name, String description,
                    double length, double width, double height, String unitSizes,
-                   double weight, String unitWeight, String color, String material,
+                   Double weight, String unitWeight, String color, String material,
                    String datingMaterial, String technique, String condition, String source,
-                   String arrivalDate, String inscriptions, String placeOfProduction,
+                   LocalDate arrivalDate, String inscriptions, String placeOfProduction,
                    String productionTime, String publication, String usage,
                    String museumValue, String status, String fund,
-                   String collection, String numberKP) {
+                   String collection, String numberKP, String ownerFio, int ownerId, String location,
+                   String conditionDetails) {
 
         setId(id);
         setPhoto(photo);
@@ -70,10 +83,47 @@ public class Exhibit {
         setFund(fund);
         setCollection(collection);
         setNumberKP(numberKP);
+        setOwnerFio(ownerFio);
+        setOwnerId(ownerId);
+        setLocation(location);
+        setConditionDetails(conditionDetails);
     }
 
-    public Exhibit() {
 
+    public Integer getOwnerId() { return ownerId.get(); }
+    public void setOwnerId(Integer value) { ownerId.set(value); }
+    public ObjectProperty<Integer> ownerIdProperty() { return ownerId; }
+
+    public Integer getIdValue() {
+        return id.get() == 0 ? null : id.get();
+    }
+
+    public String getOwnerFio() { return ownerFio.get(); }
+    public void setOwnerFio(String value) { ownerFio.set(value); }
+    public StringProperty ownerFioProperty() { return ownerFio; }
+
+    public BooleanProperty selectableProperty() {
+        return selectable;
+    }
+
+    public boolean isSelectable() {
+        return selectable.get();
+    }
+
+    public void setSelectable(boolean value) {
+        selectable.set(value);
+    }
+
+    public BooleanProperty selectedProperty() {
+        return selected;
+    }
+
+    public boolean isSelected() {
+        return selected.get();
+    }
+
+    public void setSelected(boolean value) {
+        selected.set(value);
     }
 
     // --- ID ---
@@ -114,9 +164,15 @@ public class Exhibit {
     public StringProperty unitSizesProperty() { return unitSizes; }
 
     // --- Weight ---
-    public double getWeight() { return weight.get(); }
-    public void setWeight(double value) { weight.set(value); }
-    public DoubleProperty weightProperty() { return weight; }
+    public Double getWeight() {
+        return weight.get();
+    }
+    public void setWeight(Double value) {
+        weight.set(value);
+    }
+    public ObjectProperty<Double> weightProperty() {
+        return weight;
+    }
 
     public String getUnitWeight() { return unitWeight.get(); }
     public void setUnitWeight(String value) { unitWeight.set(value); }
@@ -147,9 +203,9 @@ public class Exhibit {
     public void setSource(String value) { source.set(value); }
     public StringProperty sourceProperty() { return source; }
 
-    public LocalDate getArrivalDate() { return LocalDate.parse(arrivalDate.get()); }
-    public void setArrivalDate(String value) { arrivalDate.set(value); }
-    public StringProperty arrivalDateProperty() { return arrivalDate; }
+    public LocalDate getArrivalDate() { return arrivalDate.get(); }
+    public void setArrivalDate(LocalDate value) { arrivalDate.set(value); }
+    public ObjectProperty<LocalDate> arrivalDateProperty() { return arrivalDate; }
 
     public String getInscriptions() { return inscriptions.get(); }
     public void setInscriptions(String value) { inscriptions.set(value); }
@@ -190,4 +246,12 @@ public class Exhibit {
     public String getNumberKP() { return numberKP.get(); }
     public void setNumberKP(String value) { numberKP.set(value); }
     public StringProperty numberKPProperty() { return numberKP; }
+
+    public String getLocation() { return location.get(); }
+    public void setLocation(String value) { location.set(value); }
+    public StringProperty locationProperty() { return location; }
+
+    public String getConditionDetails() { return conditionDetails.get(); }
+    public void setConditionDetails(String value) { conditionDetails.set(value); }
+    public StringProperty conditionDetailsProperty() { return conditionDetails; }
 }

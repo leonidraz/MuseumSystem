@@ -18,19 +18,19 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 
-<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="868.0" prefWidth="1920.0" styleClass="app-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="868.0" prefWidth="1920.0" styleClass="app-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.DocumentsListFormControllers">
 
     <left>
         <VBox prefHeight="954.0" prefWidth="350.0" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
             <children>
-                <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="40.0" styleClass="subtitle" text="Фильтры документов" />
+                <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="40.0" styleClass="subtitle" text="Фильтры" />
 
                 <!-- Фильтры -->
                 <VBox spacing="15.0">
                     <children>
                         <VBox spacing="10.0">
                             <children>
-                                <Label styleClass="field-label" text="Тип документа" />
+                                <Label styleClass="field-label" text="Тип" />
                                 <ComboBox fx:id="filterDocType" prefWidth="300.0" promptText="Все типы" styleClass="input-combo">
                                     <items>
                                         <FXCollections fx:factory="observableArrayList">
@@ -51,12 +51,12 @@
 
                         <VBox spacing="10.0">
                             <children>
-                                <Label styleClass="field-label" text="Статус документа" />
+                                <Label styleClass="field-label" text="Статус" />
                                 <ComboBox fx:id="filterDocStatus" prefWidth="300.0" promptText="Все статусы" styleClass="input-combo">
                                     <items>
                                         <FXCollections fx:factory="observableArrayList">
                                             <String fx:value="Все статусы" />
-                                            <String fx:value="Проведён" />
+                                            <String fx:value="Проведен" />
                                             <String fx:value="Черновик" />
                                         </FXCollections>
                                     </items>
@@ -86,7 +86,7 @@
 
                         <VBox spacing="10.0">
                             <children>
-                                <Label styleClass="field-label" text="Экспонат" />
+                                <Label styleClass="field-label" text="Предмет" />
                                 <TextField fx:id="exhibitSearch" prefWidth="300.0" promptText="Название или № КП" styleClass="input-field" />
                             </children>
                         </VBox>
@@ -94,14 +94,6 @@
                 </VBox>
 
                 <Separator styleClass="separator" />
-
-                <!-- Быстрые фильтры -->
-                <VBox spacing="10.0">
-                    <children>
-
-                        <VBox spacing="8.0" />
-                    </children>
-                </VBox>
 
                 <!-- Действия -->
                 <VBox prefWidth="300.0" spacing="15.0">
@@ -117,12 +109,30 @@
                         <String fx:value="btn-panel-details" />
                      </styleClass>
                         </Button>
-                  <Button fx:id="createDocBtn1" mnemonicParsing="false" prefHeight="55.0" prefWidth="216.0" text="Создать протокол ЭФЗК">
+                  <Button fx:id="editDocBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="216.0" text="Редактировать">
                      <effect>
                         <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
                      </effect>
                      <styleClass>
-                        <String fx:value="btn-add" />
+                        <String fx:value="btn-edit" />
+                        <String fx:value="btn-panel-details" />
+                     </styleClass>
+                  </Button>
+                  <Button fx:id="deleteDocBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="342.0" text="Удалить">
+                     <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                     </effect>
+                     <styleClass>
+                        <String fx:value="btn-delete" />
+                        <String fx:value="btn-panel-details" />
+                     </styleClass>
+                  </Button>
+                  <Button fx:id="exportBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="342.0" text="Экспорт">
+                     <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                     </effect>
+                     <styleClass>
+                        <String fx:value="btn-delete" />
                         <String fx:value="btn-panel-details" />
                      </styleClass>
                   </Button>
@@ -146,7 +156,7 @@
 
                         <Region HBox.hgrow="ALWAYS" />
 
-                        <TextField fx:id="search" prefHeight="48.0" prefWidth="425.0" promptText="Поиск по номеру, владельцу, экспонату..." styleClass="input-field" />
+                        <TextField fx:id="search" prefHeight="48.0" prefWidth="425.0" promptText="Поиск по номеру, владельцу, предмету..." styleClass="input-field" />
                     </children>
                 </HBox>
 
@@ -154,7 +164,6 @@
                 <HBox alignment="CENTER_LEFT" spacing="15.0">
                     <children>
                         <Button mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="🔄 Обновить" />
-                        <Button mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="⇅ Сортировка" />
                         <Region HBox.hgrow="ALWAYS" />
                     </children>
                 </HBox>
@@ -162,14 +171,15 @@
                 <!-- Таблица документов -->
                 <TableView fx:id="documentsTable" prefHeight="680.0" styleClass="table">
                     <columns>
-                        <TableColumn fx:id="docNumberColumn" prefWidth="220" text="№ документа" />
-                        <TableColumn fx:id="docTypeColumn" prefWidth="200" text="Тип документа" />
-                        <TableColumn fx:id="docDateColumn" prefWidth="130" text="Дата создания" />
-                        <TableColumn fx:id="ownerColumn" prefWidth="220" text="Владелец" />
-                        <TableColumn fx:id="exhibitsCountColumn" prefWidth="220" text="Кол-во экспонатов" />
+                        <TableColumn fx:id="docNumberColumn" prefWidth="270" text="№ документа" />
+                        <TableColumn fx:id="docTypeColumn" prefWidth="250" text="Тип документа" />
+                        <TableColumn fx:id="docDateColumn" prefWidth="170" text="Дата создания" />
+                        <TableColumn fx:id="ownerColumn" prefWidth="150" text="Владелец" />
+                        <TableColumn fx:id="exhibitsCountColumn" prefWidth="70" text="Кол-во экспонатов" />
                         <TableColumn fx:id="docStatusColumn" prefWidth="110" text="Статус" />
-                        <TableColumn fx:id="conductedAtColumn" prefWidth="160" text="Дата проведения" />
-                        <TableColumn fx:id="createdByColumn" prefWidth="160" text="Создатель" />
+                        <TableColumn fx:id="conductedDateColumn" prefWidth="170" text="Дата проведения" />
+                        <TableColumn fx:id="createdByColumn" prefWidth="160" text="Создал" />
+                  <TableColumn fx:id="updatedByColumn" prefWidth="160" text="Изменил" />
                     </columns>
                     <placeholder>
                         <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 40px;">

@@ -1,222 +1,117 @@
 package com.example.museumcatalog.Models;
 
 import javafx.beans.property.*;
-
 import java.time.LocalDate;
 
+/**
+ * Модель владельца/вкладчика экспоната.
+ * Использует JavaFX Properties для автоматического обновления UI.
+ */
 public class Owner {
     private final IntegerProperty id = new SimpleIntegerProperty();
     private final StringProperty lastName = new SimpleStringProperty();
     private final StringProperty firstName = new SimpleStringProperty();
     private final StringProperty middleName = new SimpleStringProperty();
-    private final StringProperty address = new SimpleStringProperty();
     private final StringProperty passportSeries = new SimpleStringProperty();
     private final StringProperty passportNumber = new SimpleStringProperty();
     private final StringProperty issuedBy = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> dateOfIssue = new SimpleObjectProperty<>();
+    private final StringProperty address = new SimpleStringProperty();
     private final StringProperty phone = new SimpleStringProperty();
     private final StringProperty notice = new SimpleStringProperty();
-    private final BooleanProperty isActive = new SimpleBooleanProperty(true);
+    private final BooleanProperty selected = new SimpleBooleanProperty(false);
 
-    // Конструктор по умолчанию
     public Owner() {
     }
 
-    // Полный конструктор
     public Owner(int id, String lastName, String firstName, String middleName,
                  String address, String passportSeries, String passportNumber,
                  String issuedBy, LocalDate dateOfIssue, String phone,
-                 String notice, boolean isActive) {
-        this.id.set(id);
-        this.lastName.set(lastName);
-        this.firstName.set(firstName);
-        this.middleName.set(middleName);
-        this.address.set(address);
-        this.passportSeries.set(passportSeries);
-        this.passportNumber.set(passportNumber);
-        this.issuedBy.set(issuedBy);
-        this.dateOfIssue.set(dateOfIssue);
-        this.phone.set(phone);
-        this.notice.set(notice);
-        this.isActive.set(isActive);
+                 String notice) {
+        setId(id);
+        setLastName(lastName);
+        setFirstName(firstName);
+        setMiddleName(middleName);
+        setAddress(address);
+        setPassportSeries(passportSeries);
+        setPassportNumber(passportNumber);
+        setIssuedBy(issuedBy);
+        setDateOfIssue(dateOfIssue);
+        setPhone(phone);
+        setNotice(notice);
     }
 
-    // Геттеры для значений
-    public int getId() {
-        return id.get();
-    }
+    //ID
+    public int getId() { return id.get(); }
+    public void setId(int value) { id.set(value); }
+    public IntegerProperty idProperty() { return id; }
 
-    public String getLastName() {
-        return lastName.get();
-    }
+    //ФИО
+    public String getLastName() { return lastName.get(); }
+    public void setLastName(String value) { lastName.set(value); }
+    public StringProperty lastNameProperty() { return lastName; }
 
-    public String getFirstName() {
-        return firstName.get();
-    }
+    public String getFirstName() { return firstName.get(); }
+    public void setFirstName(String value) { firstName.set(value); }
+    public StringProperty firstNameProperty() { return firstName; }
 
-    public String getMiddleName() {
-        return middleName.get();
-    }
+    public String getMiddleName() { return middleName.get(); }
+    public void setMiddleName(String value) { middleName.set(value); }
+    public StringProperty middleNameProperty() { return middleName; }
 
-    public String getAddress() {
-        return address.get();
-    }
+    //Паспорт
+    public String getPassportSeries() { return passportSeries.get(); }
+    public void setPassportSeries(String value) { passportSeries.set(value); }
+    public StringProperty passportSeriesProperty() { return passportSeries; }
 
-    public String getPassportSeries() {
-        return passportSeries.get();
-    }
+    public String getPassportNumber() { return passportNumber.get(); }
+    public void setPassportNumber(String value) { passportNumber.set(value); }
+    public StringProperty passportNumberProperty() { return passportNumber; }
 
-    public String getPassportNumber() {
-        return passportNumber.get();
-    }
+    public String getIssuedBy() { return issuedBy.get(); }
+    public void setIssuedBy(String value) { issuedBy.set(value); }
+    public StringProperty issuedByProperty() { return issuedBy; }
 
-    public String getIssuedBy() {
-        return issuedBy.get();
-    }
+    public LocalDate getDateOfIssue() { return dateOfIssue.get(); }
+    public void setDateOfIssue(LocalDate value) { dateOfIssue.set(value); }
+    public ObjectProperty<LocalDate> dateOfIssueProperty() { return dateOfIssue; }
 
-    public LocalDate getDateOfIssue() {
-        return dateOfIssue.get();
-    }
+    //Контакты
+    public String getAddress() { return address.get(); }
+    public void setAddress(String value) { address.set(value); }
+    public StringProperty addressProperty() { return address; }
 
-    public String getPhone() {
-        return phone.get();
-    }
+    public String getPhone() { return phone.get(); }
+    public void setPhone(String value) { phone.set(value); }
+    public StringProperty phoneProperty() { return phone; }
 
-    public String getNotice() {
-        return notice.get();
-    }
+    //Дополнительно
+    public String getNotice() { return notice.get(); }
+    public void setNotice(String value) { notice.set(value); }
+    public StringProperty noticeProperty() { return notice; }
 
-    public boolean isActive() {
-        return isActive.get();
-    }
-
-    // Сеттеры для значений
-    public void setId(int id) {
-        this.id.set(id);
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName.set(lastName);
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName.set(firstName);
-    }
-
-    public void setMiddleName(String middleName) {
-        this.middleName.set(middleName);
-    }
-
-    public void setAddress(String address) {
-        this.address.set(address);
-    }
-
-    public void setPassportSeries(String passportSeries) {
-        this.passportSeries.set(passportSeries);
-    }
-
-    public void setPassportNumber(String passportNumber) {
-        this.passportNumber.set(passportNumber);
-    }
-
-    public void setIssuedBy(String issuedBy) {
-        this.issuedBy.set(issuedBy);
-    }
-
-    public void setDateOfIssue(LocalDate dateOfIssue) {
-        this.dateOfIssue.set(dateOfIssue);
-    }
-
-    public void setPhone(String phone) {
-        this.phone.set(phone);
-    }
-
-    public void setNotice(String notice) {
-        this.notice.set(notice);
-    }
-
-    public void setActive(boolean active) {
-        isActive.set(active);
-    }
-
-    // Property-геттеры (обязательны для привязки в TableView)
-    public IntegerProperty idProperty() {
-        return id;
-    }
-
-    public StringProperty lastNameProperty() {
-        return lastName;
-    }
-
-    public StringProperty firstNameProperty() {
-        return firstName;
-    }
-
-    public StringProperty middleNameProperty() {
-        return middleName;
-    }
-
-    public StringProperty addressProperty() {
-        return address;
-    }
-
-    public StringProperty passportSeriesProperty() {
-        return passportSeries;
-    }
-
-    public StringProperty passportNumberProperty() {
-        return passportNumber;
-    }
-
-    public StringProperty issuedByProperty() {
-        return issuedBy;
-    }
-
-    public ObjectProperty<LocalDate> dateOfIssueProperty() {
-        return dateOfIssue;
-    }
-
-    public StringProperty phoneProperty() {
-        return phone;
-    }
-
-    public StringProperty noticeProperty() {
-        return notice;
-    }
-
-    public BooleanProperty activeProperty() {
-        return isActive;
-    }
+    //Системные флаги
+    public boolean isSelected() { return selected.get(); }
+    public void setSelected(boolean value) { selected.set(value); }
+    public BooleanProperty selectedProperty() { return selected; }
 
     public String getFullFio() {
-        StringBuilder fio = new StringBuilder(lastName.get());
-        if (firstName.get() != null && !firstName.get().isEmpty()) {
-            fio.append(" ").append(firstName.get());
-        }
-        if (middleName.get() != null && !middleName.get().isEmpty()) {
-            fio.append(" ").append(middleName.get());
-        }
-        return fio.toString();
+        String l = lastName.get(), f = firstName.get(), m = middleName.get();
+        return ((l != null ? l : "") + " " + (f != null ? f : "") + " " + (m != null ? m : ""))
+                .trim().replaceAll("\\s+", " ");
     }
 
     public String getShortFio() {
-        StringBuilder fio = new StringBuilder(lastName.get());
-        if (firstName.get() != null && !firstName.get().isEmpty()) {
-            fio.append(" ").append(firstName.get().charAt(0)).append(".");
-        }
-        if (middleName.get() != null && !middleName.get().isEmpty()) {
-            fio.append(middleName.get().charAt(0)).append(".");
-        }
-        return fio.toString();
+        String l = lastName.get(), f = firstName.get(), m = middleName.get();
+        StringBuilder res = new StringBuilder(l != null ? l : "");
+        if (f != null && !f.isEmpty()) res.append(" ").append(f.charAt(0)).append(".");
+        if (m != null && !m.isEmpty()) res.append(" ").append(m.charAt(0)).append(".");
+        return res.toString();
     }
 
-    // Форматированный паспорт для отображения
     public String getPassport() {
-        return passportSeries.get() + " " + passportNumber.get();
-    }
-
-    @Override
-    public String toString() {
-        return getShortFio() + " (" + getPassport() + ")";
+        String s = passportSeries.get();
+        String n = passportNumber.get();
+        return (s != null ? s : "") + " " + (n != null ? n : "");
     }
 }

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="765.0" prefWidth="800.0" style="-fx-background-color: white; -fx-background-radius: 12px; -fx-border-color: #333333; -fx-border-width: 2px;" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.ReferenceBooksRegistrationController">
+    <!-- HEADER -->
+    <top>
+        <VBox style="-fx-background-color: white;">
+            <children>
+                <HBox alignment="CENTER" prefHeight="72.0" prefWidth="796.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 0 0 10px 10px;">
+                    <children>
+                        <Label fx:id="titleLabel" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Добавление записи в справочник" />
+                    </children>
+                </HBox>
+                <Label style="-fx-font-size: 16px; -fx-text-fill: #666666; -fx-padding: 10px 40px 0 40px;" text="Выберите тип справочника и заполните данные" />
+            </children>
+        </VBox>
+    </top>
+
+    <!-- CONTENT -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: white;">
+            <content>
+                <VBox spacing="20.0" style="-fx-padding: 30px;">
+
+                    <!-- ВЫБОР ТИПА СПРАВОЧНИКА -->
+                    <VBox spacing="10.0">
+                        <Label style="-fx-font-size: 17px; -fx-font-weight: bold;" text="Тип справочника *" />
+                        <ComboBox fx:id="referenceTypeCombo" promptText="Выберите тип справочника" styleClass="input-combo" />
+                    </VBox>
+
+                    <!-- ФОРМА ДЛЯ ФОНДА -->
+                    <VBox fx:id="fundForm" spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
+                        <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Данные фонда" />
+
+                        <VBox spacing="15.0">
+                            <VBox spacing="8.0">
+                                <Label style="-fx-font-size: 17px;" text="Название фонда *" />
+                                <TextField fx:id="fundNameField" promptText="Введите название фонда" styleClass="input-field2" />
+                            </VBox>
+                     <VBox spacing="8.0">
+                        <children>
+                           <Label style="-fx-font-size: 17px;" text="Шифр фонда *" />
+                           <TextField fx:id="kpPrefixField" promptText="Введите шифр фонда. Он будет использоваться при формировании номера КП" styleClass="input-field2" />
+                        </children>
+                     </VBox>
+                        </VBox>
+                         <VBox spacing="8.0">
+                             <Label style="-fx-font-size: 17px;" text="Описание фонда" />
+                             <TextArea fx:id="fundDescriptionField" prefHeight="115.0" prefWidth="671.0" promptText="Введите описание фонда" style="-fx-background-color: white; -fx-border-color: #CCCCCC; -fx-border-radius: 10px; -fx-padding: 12px; -fx-font-size: 17px;" wrapText="true" />
+                         </VBox>
+                    </VBox>
+
+                    <!-- ФОРМА ДЛЯ КОЛЛЕКЦИИ -->
+                    <VBox fx:id="collectionForm" spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
+                        <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Данные коллекции" />
+                        <VBox spacing="15.0">
+                            <VBox spacing="8.0">
+                                <Label style="-fx-font-size: 17px;" text="Название коллекции *" />
+                                <TextField fx:id="collectionNameField" promptText="Введите название коллекции" styleClass="input-field2" />
+                            </VBox>
+                            <VBox spacing="8.0">
+                                <Label style="-fx-font-size: 17px;" text="Фонд *" />
+                                <ComboBox fx:id="collectionFundCombo" promptText="Выберите фонд" styleClass="input-combo" />
+                            </VBox>
+                            <VBox spacing="8.0">
+                                <Label style="-fx-font-size: 17px;" text="Описание коллекции" />
+                                <TextArea fx:id="collectionDescriptionField" prefHeight="115.0" promptText="Введите описание коллекции" style="-fx-background-color: white; -fx-border-color: #CCCCCC; -fx-border-radius: 10px; -fx-padding: 12px; -fx-font-size: 17px;" wrapText="true" />
+                            </VBox>
+                        </VBox>
+                    </VBox>
+               <VBox fx:id="positionForm" spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
+                  <children>
+                     <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Данные должности" />
+                     <VBox spacing="15.0">
+                        <children>
+                           <VBox spacing="8.0">
+                              <children>
+                                 <Label style="-fx-font-size: 17px;" text="Название должности *" />
+                                 <TextField fx:id="positionNameField" promptText="Введите название должности" styleClass="input-field2" />
+                              </children>
+                           </VBox>
+                        </children>
+                     </VBox>
+                  </children>
+               </VBox>
+
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+    <!-- BUTTONS -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="25.0" style="-fx-background-color: white; -fx-padding: 16px 40px;">
+            <children>
+                <Button fx:id="cancelBtn" prefHeight="46.0" prefWidth="140.0" style="-fx-background-color: #9E9E9E; -fx-text-fill: white; -fx-background-radius: 10px; -fx-font-size: 18px; -fx-font-weight: bold;" text="Отмена">
+                    <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                    </effect>
+                </Button>
+                <Button fx:id="saveBtn" prefHeight="46.0" prefWidth="240.0" style="-fx-background-color: #7CB4CF; -fx-text-fill: white; -fx-background-radius: 10px; -fx-font-size: 18px; -fx-font-weight: bold;" text="Сохранить">
+                    <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                    </effect>
+                </Button>
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>

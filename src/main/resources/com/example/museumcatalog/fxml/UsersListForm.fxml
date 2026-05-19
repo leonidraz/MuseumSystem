@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="868.0" prefWidth="1920.0" styleClass="app-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.UsersListFormController">
+
+    <left>
+        <VBox prefHeight="954.0" prefWidth="350.0" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
+            <children>
+                <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="40.0" styleClass="subtitle" text="Фильтры" />
+
+                <!-- Фильтры -->
+                <VBox spacing="15.0">
+                    <children>
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Роль" />
+                                <ComboBox fx:id="filterUserRole" prefWidth="300.0" promptText="Все роли" styleClass="input-combo" />
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="10.0">
+                            <children>
+                                <Label styleClass="field-label" text="Статус" />
+                                <ComboBox fx:id="filterUserStatus" prefWidth="300.0" promptText="Все статусы" styleClass="input-combo" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <Separator styleClass="separator" />
+
+                <!-- Действия -->
+                <VBox prefWidth="300.0" spacing="15.0">
+                    <children>
+                        <Label styleClass="section-title" text="Действия" />
+
+                        <Button fx:id="addUserBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="158.0" text="Добавить">
+                            <effect>
+                                <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                            </effect>
+                            <styleClass>
+                                <String fx:value="btn-add" />
+                                <String fx:value="btn-panel-details" />
+                            </styleClass>
+                        </Button>
+                        <Button fx:id="editUserBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="216.0" text="Редактировать">
+                            <effect>
+                                <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                            </effect>
+                            <styleClass>
+                                <String fx:value="btn-edit" />
+                                <String fx:value="btn-panel-details" />
+                            </styleClass>
+                        </Button>
+                        <Button fx:id="deleteUserBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="342.0" text="Удалить">
+                            <effect>
+                                <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                            </effect>
+                            <styleClass>
+                                <String fx:value="btn-delete" />
+                                <String fx:value="btn-panel-details" />
+                            </styleClass>
+                        </Button>
+                  <Button fx:id="authLogsBtn" mnemonicParsing="false" prefHeight="55.0" prefWidth="342.0" text="Журнал авторизации">
+                     <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                     </effect>
+                     <styleClass>
+                        <String fx:value="btn-documents" />
+                        <String fx:value="btn-panel-details" />
+                     </styleClass>
+                  </Button>
+                    </children>
+                </VBox>
+            </children>
+            <BorderPane.margin>
+                <Insets />
+            </BorderPane.margin>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
+            <children>
+                <!-- Заголовок + поиск -->
+                <HBox alignment="CENTER_LEFT" spacing="20.0">
+                    <children>
+                        <Label styleClass="title" text="Список пользователей" />
+                        <Label fx:id="totalCountLabel" styleClass="counter-badge" text="Всего: " />
+
+                        <Region HBox.hgrow="ALWAYS" />
+
+                        <TextField fx:id="search" prefHeight="48.0" prefWidth="425.0" promptText="Поиск по логину и ФИО сотрудника..." styleClass="input-field" />
+                    </children>
+                </HBox>
+
+                <!-- Панель управления таблицей -->
+                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                    <children>
+                        <Button mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Обновить" />
+                        <Region HBox.hgrow="ALWAYS" />
+                    </children>
+                </HBox>
+
+                <!-- Таблица документов -->
+                <TableView fx:id="usersTable" prefHeight="680.0" styleClass="table">
+                    <columns>
+                        <TableColumn fx:id="loginUserColumn" prefWidth="270" text="Логин" />
+                  <TableColumn fx:id="hashPaswordUserColumn" prefWidth="471.0" text="Хешированный пароль" />
+                        <TableColumn fx:id="employeeUserColumn" prefWidth="296.0" text="Привязанный сотрудник" />
+                        <TableColumn fx:id="roleUserColumn" prefWidth="235.0" text="Роль" />
+                        <TableColumn fx:id="statusUserColumn" prefWidth="147.0" text="Статус" />
+                    </columns>
+                    <placeholder>
+                        <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 40px;">
+                            <children>
+                                <Rectangle arcHeight="20" arcWidth="20" fill="#E0E0E0" height="80.0" width="80.0" />
+                                <Label styleClass="placeholder" text="Пользователи не найдены" />
+                                <Label alignment="CENTER" styleClass="placeholder-small" text="Измените параметры поиска или фильтрации" wrapText="true" />
+                            </children>
+                        </VBox>
+                    </placeholder>
+                </TableView>
+            </children>
+            <BorderPane.margin>
+                <Insets left="20.0" />
+            </BorderPane.margin>
+        </VBox>
+    </center>
+
+
+    <padding>
+        <Insets left="40.0" right="40.0" />
+    </padding>
+</BorderPane>

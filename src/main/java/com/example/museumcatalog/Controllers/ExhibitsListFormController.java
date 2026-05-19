@@ -3,15 +3,14 @@ package com.example.museumcatalog.Controllers;
 import com.example.museumcatalog.DBHandler;
 import com.example.museumcatalog.Models.Exhibit;
 import com.example.museumcatalog.Service;
+import com.example.museumcatalog.Storages.ExhibitRepository;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -27,11 +26,97 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 
 public class ExhibitsListFormController {
+
+    //Центральная таблица exhibitsTable
+    @FXML
+    private TableView<Exhibit> exhibitsTable;
+
+    //Колонки таблицы exhibitsTable
+    @FXML private TableColumn<Exhibit, String> nameColumn;
+    @FXML private TableColumn<Exhibit, String> descColumn;
+    @FXML private TableColumn<Exhibit, String> ownerShortName;
+    @FXML private TableColumn<Exhibit, Double> lengthColumn;
+    @FXML private TableColumn<Exhibit, Double> widthColumn;
+    @FXML private TableColumn<Exhibit, Double> heightColumn;
+    @FXML private TableColumn<Exhibit, String> unitSizesColumn;
+    @FXML private TableColumn<Exhibit, Double> weightColumn;
+    @FXML private TableColumn<Exhibit, String> unitWeightColumn;
+    @FXML private TableColumn<Exhibit, String> colorColumn;
+    @FXML private TableColumn<Exhibit, String> materialColumn;
+    @FXML private TableColumn<Exhibit, String> datingMaterialColumn;
+    @FXML private TableColumn<Exhibit, String> techniqueColumn;
+    @FXML private TableColumn<Exhibit, String> conditionColumn;
+    @FXML private TableColumn<Exhibit, String> sourceColumn;
+    @FXML private TableColumn<Exhibit, LocalDate> arrivalDateColumn;
+    @FXML private TableColumn<Exhibit, String> inscriptionsColumn;
+    @FXML private TableColumn<Exhibit, String> placeOfProductionColumn;
+    @FXML private TableColumn<Exhibit, String> productionTimeColumn;
+    @FXML private TableColumn<Exhibit, String> publicationColumn;
+    @FXML private TableColumn<Exhibit, String> usageColumn;
+    @FXML private TableColumn<Exhibit, String> museumValueColumn;
+    @FXML private TableColumn<Exhibit, String> statusColumn;
+    @FXML private TableColumn<Exhibit, String> fundColumn;
+    @FXML private TableColumn<Exhibit, String> collectionColumn;
+    @FXML private TableColumn<Exhibit, String> numberKPColumn;
+
+    //Кнопки
+    @FXML private Button refreshBtn;
+    @FXML private Button addBtn;
+    @FXML private Button editBtn;
+    @FXML private Button deleteBtn;
+    @FXML private Button archiveBtn;
+    @FXML private Button closeDetailsCard;
+
+    //Элементы детальной карточки предмета
+    @FXML private ImageView imageView;
+    @FXML private Label name;
+    @FXML private Circle statusCircle;
+    @FXML private Label status;
+    @FXML private Label KPPNumber;
+        //Вкладка "Основное"
+    @FXML private Label arrivalDate;
+    @FXML private Label description;
+    @FXML private Label fund;
+    @FXML private Label collection;
+    @FXML private Label owner;
+        //Вкладка "Характеристики"
+    @FXML private Label dimensions;
+    @FXML private Label weight;
+    @FXML private Label color;
+    @FXML private Label material;
+    @FXML private Label datingMaterial;
+    @FXML private Label technique;
+        //Вкладка "Дополнительно"
+    @FXML private Label source;
+    @FXML private Label condition;
+    @FXML private Label inscriptions;
+    @FXML private Label productionPlace;
+    @FXML private Label productionTime;
+    @FXML private Label publications;
+    @FXML private Label usage;
+    @FXML private Label museumValue;
+
+    //Элементы поиска/фильтрации
+    @FXML private ComboBox<String> filterStatus;
+    @FXML private ComboBox<String> filterFund;
+    @FXML private ComboBox<String> filterCollection;
+    @FXML private DatePicker dateFrom;
+    @FXML private DatePicker dateTo;
+    @FXML private TextField ownerSearch;
+    @FXML private TextField search;
+
+    //Другие элементы
+    @FXML private VBox centerVBox;
+    @FXML private BorderPane rootPane;
+    @FXML private Label totalCountLabel;
+    @FXML private VBox detailsCard;
+    @FXML private VBox contentDetailsCard;
 
     private static final Map<String, String> STATUS_COLORS = Map.of(
             "На временном хранении", "#2196F3",    // Синий
@@ -44,265 +129,61 @@ public class ExhibitsListFormController {
             "Архивирован", "#607D8B",             // Серо-синий
             "В обработке", "#607D8B"              // Серо-синий
     );
-
-    @FXML
-    public VBox centerVBox;
-
-    @FXML
-    private Circle statusCircle;
-
-    @FXML
-    public BorderPane rootPane;
-
-    @FXML
-    public DatePicker dateFrom;
-
-    @FXML
-    public DatePicker dateTo;
-
-    @FXML
-    private Label arrivalDate;
-
-    @FXML
-    private Label collection;
-
-    @FXML
-    private Label color;
-
-    @FXML
-    private Label condition;
-
-    @FXML
-    private Label dating;
-
-    @FXML
-    private Label description;
-
-    @FXML
-    private Label dimensions;
-
-    @FXML
-    private Label fund;
-
-    @FXML
-    private Label inscriptions;
-
-    @FXML
-    private Label KPPNumber;
-
-    @FXML
-    private Label material;
-
-    @FXML
-    private Label museumValue;
-
-    @FXML
-    private Label name;
-
-    @FXML
-    private Label owner;
-
-    @FXML
-    private Label productionPlace;
-
-    @FXML
-    private Label productionTime;
-
-    @FXML
-    private Label publications;
-
-    @FXML
-    private Label source;
-
-    @FXML
-    private Label status;
-
-    @FXML
-    private Label technique;
-
-    @FXML
-    private Label totalCountLabel;
-
-    @FXML
-    private Label usage;
-
-    @FXML
-    private Label weight;
-
-    @FXML
-    private TextField search;
-
-    @FXML
-    private Button closeDetailsCard;
-
-    @FXML
-    private VBox detailsCard;
-
-    @FXML
-    private VBox contentDetailsCard;
-
-    @FXML
-    private ComboBox<String> filterCollection;
-
-    @FXML
-    private ComboBox<String> filterFund;
-
-    @FXML
-    private ComboBox<String> filterStatus;
-
-    @FXML
-    private Button addBtn;
-
-    @FXML
-    private Button editBtn;
-
-    @FXML
-    private Button deleteBtn;
-
-    @FXML
-    private Button archiveBtn;
-
-    @FXML
-    private ImageView imageView;
-
-    @FXML
-    private TableView<Exhibit> exhibitsTable;
-    @FXML
-    private TableColumn<Exhibit, String> nameColumn;
-    @FXML
-    private TableColumn<Exhibit, String> descColumn;
-    @FXML
-    private TableColumn<Exhibit, Double> lengthColumn;
-    @FXML
-    private TableColumn<Exhibit, Double> widthColumn;
-    @FXML
-    private TableColumn<Exhibit, Double> heightColumn;
-    @FXML
-    public TableColumn<Exhibit, String> unitSizesColumn;
-    @FXML
-    public TableColumn<Exhibit, String> unitWeightColumn;
-    @FXML
-    private TableColumn<Exhibit, Double> weightColumn;
-    @FXML
-    private TableColumn<Exhibit, String> colorColumn;
-    @FXML
-    private TableColumn<Exhibit, String> materialColumn;
-    @FXML
-    private TableColumn<Exhibit, String> datingMaterialColumn;
-    @FXML
-    private TableColumn<Exhibit, String> techniqueColumn;
-    @FXML
-    private TableColumn<Exhibit, String> conditionColumn;
-    @FXML
-    private TableColumn<Exhibit, String> sourceColumn;
-    @FXML
-    private TableColumn<Exhibit, String> arrivalDateColumn;
-    @FXML
-    private TableColumn<Exhibit, String> inscriptionsColumn;
-    @FXML
-    private TableColumn<Exhibit, String> placeOfProductionColumn;
-    @FXML
-    private TableColumn<Exhibit, String> productionTimeColumn;
-    @FXML
-    private TableColumn<Exhibit, String> publicationColumn;
-    @FXML
-    private TableColumn<Exhibit, String> usageColumn;
-    @FXML
-    private TableColumn<Exhibit, String> museumValueColumn;
-    @FXML
-    private TableColumn<Exhibit, String> statusColumn;
-    @FXML
-    private TableColumn<Exhibit, String> fundColumn;
-    @FXML
-    private TableColumn<Exhibit, String> collectionColumn;
-    @FXML
-    private TableColumn<Exhibit, String> numberKPColumn;
-    @FXML
-    private Button updateTableBtn;
-
-    ObservableList<Exhibit> exhibitsList = FXCollections.observableArrayList();
-
     Service service = new Service();
+    private FilteredList<Exhibit> filteredExhibits;
 
     public void initialize() throws SQLException {
-        //Скрытие карточки с деталями экспоната при открытии формы
-        archiveBtn.setText("Архивировать");
-        detailsCard.setPrefWidth(10);
-        detailsCard.setStyle("-fx-background-color: #7CB4CF;");
-        contentDetailsCard.setVisible(false);
+        setupTableColumns();
+        loadExhibits();
+        setupListeners();
+        setupButtonHandlers();
+        resetDetailsCard();
+
+        if (Service.getExhibit() != null) {
+            exhibitsTable.getItems().stream()
+                    .filter(e -> e.getId() == Service.getExhibit().getId())
+                    .findFirst()
+                    .ifPresent(e -> {
+                        exhibitsTable.getSelectionModel().select(e);
+                        exhibitsTable.scrollTo(e);
+                        loadExhibitInfo(e);
+                        animateDetailsCard(true);
+                    });
+        }
 
         //Загрузка списка значений ComboBox для фильтров
         filterStatus.getItems().add("Все статусы");
         filterStatus.getItems().addAll(service.getValuesComboBox("exhibit_statuses", "status_name", null));
-        filterFund.getItems().add("Все записи");
-        filterFund.getItems().add("Все фонды");
-        filterFund.getItems().add("Без фонда");
+        filterStatus.setValue("Все статусы");
+        filterFund.getItems().addAll("Все записи", "Все фонды", "Без фонда");
         filterFund.getItems().addAll(service.getValuesComboBox("funds", "fund_name", null));
         filterFund.setValue("Все записи");
 
-        //Скрытие коллекций при значении "Все фонды"
+        //Скрытие коллекций при значении "Все записи"
         updateCollectionsComboBox(filterFund.getValue());
 
-        //Отслеживание изменений значений фильтра со статусами
-        filterStatus.valueProperty().addListener((obs, oldValue, newValue) -> {
-            try {
-                loadExhibits();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+        detailsCard.setOnMouseClicked(actionEvent -> {
+            animateDetailsCard(true);
         });
 
-        //Отслеживание изменений значений фильтра с фондами
-        filterFund.valueProperty().addListener((obs, oldValue, newValue) -> {
-            updateCollectionsComboBox(newValue);
-            try {
-                loadExhibits();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+        //Cлушатель на выбор строки
+        exhibitsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                loadExhibitInfo(newSelection);
+                animateDetailsCard(true);
             }
         });
+    }
 
-        //Отслеживание изменений значений фильтра с коллекциями
-        filterCollection.valueProperty().addListener((obs, oldValue, newValue) -> {
-            try {
-                loadExhibits();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        dateFrom.valueProperty().addListener((obs, oldValue, newValue) -> {
-            try {
-                loadExhibits();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        dateTo.valueProperty().addListener((obs, oldValue, newValue) -> {
-            try {
-                loadExhibits();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        search.textProperty().addListener((obs, oldValue, newValue) -> {
-            try {
-                loadExhibits();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        // --- Связываем колонки с полями модели ---
+    private void setupTableColumns() {
+        //Связываем колонки с полями модели
         nameColumn.setCellValueFactory(cell -> cell.getValue().nameProperty());
         descColumn.setCellValueFactory(cell -> cell.getValue().descriptionProperty());
         lengthColumn.setCellValueFactory(cell -> cell.getValue().lengthProperty().asObject());
         widthColumn.setCellValueFactory(cell -> cell.getValue().widthProperty().asObject());
         heightColumn.setCellValueFactory(cell -> cell.getValue().heightProperty().asObject());
         unitSizesColumn.setCellValueFactory(cell -> cell.getValue().unitSizesProperty());
-        weightColumn.setCellValueFactory(cell -> cell.getValue().weightProperty().asObject());
+        weightColumn.setCellValueFactory(cell -> cell.getValue().weightProperty());
         unitWeightColumn.setCellValueFactory(cell -> cell.getValue().unitWeightProperty());
         colorColumn.setCellValueFactory(cell -> cell.getValue().colorProperty());
         materialColumn.setCellValueFactory(cell -> cell.getValue().materialProperty());
@@ -321,37 +202,129 @@ public class ExhibitsListFormController {
         fundColumn.setCellValueFactory(cell -> cell.getValue().fundProperty());
         collectionColumn.setCellValueFactory(cell -> cell.getValue().collectionProperty());
         numberKPColumn.setCellValueFactory(cell -> cell.getValue().numberKPProperty());
+        ownerShortName.setCellValueFactory(cell -> cell.getValue().ownerFioProperty());
+    }
 
-        // Подключаем слушатель на выбор строки
-        exhibitsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                loadExhibitInfo(newSelection);
-                openDetailsCard();
+    private void loadExhibits() throws SQLException {
+        ExhibitRepository.loadAll();
+        filteredExhibits = new FilteredList<>(
+                ExhibitRepository.getExhibits(),
+                p -> true
+        );
+
+        SortedList<Exhibit> sortedList = new SortedList<>(filteredExhibits);
+
+        sortedList.comparatorProperty().bind(exhibitsTable.comparatorProperty());
+        exhibitsTable.setItems(sortedList);
+
+        totalCountLabel.setText("Всего: " + filteredExhibits.size());
+    }
+
+    private void setupListeners() {
+        search.textProperty().addListener((obs, o, n) -> applyFilters());
+        ownerSearch.textProperty().addListener((obs, o, n) -> applyFilters());
+
+        filterStatus.valueProperty().addListener((obs, o, n) -> applyFilters());
+        filterFund.valueProperty().addListener((obs, o, n) -> {
+            updateCollectionsComboBox(n);
+            applyFilters();
+        });
+        filterCollection.valueProperty().addListener((obs, o, n) -> applyFilters());
+        dateFrom.valueProperty().addListener((obs, o, n) -> applyFilters());
+        dateTo.valueProperty().addListener((obs, o, n) -> applyFilters());
+    }
+
+    private void applyFilters() {
+        filteredExhibits.setPredicate(exhibit -> {
+            //Поиск по наименованию и номеру КП
+            String text = search.getText();
+            if (text != null && !text.isEmpty()) {
+                String t = text.toLowerCase();
+
+                String name = exhibit.getName() == null ? "" : exhibit.getName().toLowerCase();
+                String kp = exhibit.getNumberKP() == null ? "" : exhibit.getNumberKP().toLowerCase();
+
+                if (!name.contains(t) && !kp.contains(t)) {
+                    return false;
+                }
             }
-        });
+            //Фильтрация по ФИО владельца
+            String ownerText = ownerSearch.getText();
+            if (ownerText != null && !ownerText.isEmpty()) {
+                if (exhibit.getOwnerFio() == null ||
+                        !exhibit.getOwnerFio().toLowerCase().contains(ownerText.toLowerCase())) {
+                    return false;
+                }
+            }
+            //Фильтрация по статусу
+            if (filterStatus.getValue() != null && !filterStatus.getValue().equals("Все статусы")) {
+                if (!filterStatus.getValue().equals(exhibit.getStatus())) {
+                    return false;
+                }
+            }
+            //Фильтрация по фонду
+            String fund = filterFund.getValue();
+            if (fund != null) {
+                if (fund.equals("Все записи")) {
 
+                }
+                else if (fund.equals("Все фонды")) {
+                    if (exhibit.getFund() == null) {
+                        return false;
+                    }
+                }
+                else if (fund.equals("Без фонда")) {
+                    if (exhibit.getFund() != null) {
+                        return false;
+                    }
+                }
+                else {
+                    if (exhibit.getFund() == null || !fund.equals(exhibit.getFund())) {
+                        return false;
+                    }
+                }
+            }
+            //Фильтрация по коллекции
+            if (filterCollection.getValue() != null &&
+                    !filterCollection.getValue().equals("Все коллекции") &&
+                    !filterCollection.getValue().equals("Сначала выберите фонд")) {
+                if (!filterCollection.getValue().equals(exhibit.getCollection())) {
+                    return false;
+                }
+            }
+            //Фильтрация по периоду поступления
+            if (dateFrom.getValue() != null && exhibit.getArrivalDate() != null) {
+                if (exhibit.getArrivalDate().compareTo(dateFrom.getValue()) < 0) {
+                    return false;
+                }
+            }
+            if (dateTo.getValue() != null && exhibit.getArrivalDate() != null) {
+                if (exhibit.getArrivalDate().compareTo(dateTo.getValue()) > 0) {
+                    return false;
+                }
+            }
+            return true;
+        });
+        totalCountLabel.setText("Всего: " + filteredExhibits.size());
+    }
+
+    private void setupButtonHandlers() {
         closeDetailsCard.setOnAction(actionEvent -> {
-            contentDetailsCard.setVisible(false);
-
-            Timeline closeAnim = new Timeline(
-                    new KeyFrame(Duration.millis(300),
-                            new KeyValue(detailsCard.prefWidthProperty(), 10)
-                    )
-            );
-            closeAnim.setOnFinished(e -> detailsCard.setStyle("-fx-background-color: #7CB4CF;"));
-
-            closeAnim.play();
-        });
-
-
-        detailsCard.setOnMouseClicked(actionEvent -> {
-            openDetailsCard();
+            animateDetailsCard(false);
         });
 
         addBtn.setOnAction(actionEvent -> {
+            Service.setExhibit(null);
             try {
-                Service.openModal("ExhibitRegistrationForm", "Добавление экспоната",
+                ExhibitRegistrationForm controller = Service.openModal("ExhibitRegistrationForm", "Добавление предмета",
                         (Stage) addBtn.getScene().getWindow());
+                if (controller.getResultController() != null) {
+                    Exhibit ex = controller.getResultController();
+                    exhibitsTable.getSelectionModel().select(ex);
+                    loadExhibitInfo(ex);
+                    animateDetailsCard(true);
+                    totalCountLabel.setText("Всего: " + filteredExhibits.size());
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -359,19 +332,17 @@ public class ExhibitsListFormController {
 
         editBtn.setOnAction(actionEvent -> {
             Exhibit selected = exhibitsTable.getSelectionModel().getSelectedItem();
-
             if (selected == null) {
                 service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите экспонат для редактирования",
+                        "Выберите предмет для редактирования",
                         "Предупреждение");
                 return;
             }
 
             try {
-                Service.setExhibit(selected); // ✅ передаём объект
+                Service.setExhibit(selected); //передаю объект при редактировании
                 Service.openModal("ExhibitRegistrationForm", "Редактирование экспоната",
                         (Stage) addBtn.getScene().getWindow());
-                exhibitsTable.refresh();
                 loadExhibitInfo(selected);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -379,44 +350,50 @@ public class ExhibitsListFormController {
         });
 
         deleteBtn.setOnAction(actionEvent -> {
-            Exhibit selected = exhibitsTable.getSelectionModel().getSelectedItem();
-            if (selected == null) {
-                service.openAlert(Alert.AlertType.WARNING, "Выберите экспонат для удаления", "Предупреждение");
+            Exhibit exhibit = exhibitsTable.getSelectionModel().getSelectedItem();
+            if (exhibit == null) {
+                service.openAlert(Alert.AlertType.WARNING,
+                        "Выберите предмет для удаления",
+                        "Предупреждение");
                 return;
             }
 
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle("Подтверждение удаления");
-            confirm.setHeaderText("Вы уверены, что хотите удалить экспонат?");
-            confirm.setContentText("Экспонат \"" + selected.getName() + "\" будет безвозвратно удален из базы данных и файловой системы.");
+            confirm.setHeaderText("Вы уверены, что хотите удалить предмет?");
+            confirm.setContentText("Предмет \"" + exhibit.getName() + "\" будет безвозвратно удален из базы данных и файловой системы.");
 
-            if (confirm.showAndWait().get() == ButtonType.OK) {
-                try {
-                    // Удаление фото из файловой системы
-                    if (selected.getPhoto() != null && !selected.getPhoto().isEmpty()) {
-                        Files.deleteIfExists(Path.of("images", selected.getPhoto()));
+            if (confirm.showAndWait().get() != ButtonType.OK) {
+                return;
+            }
+
+            try {
+                int result = ExhibitRepository.delete(exhibit.getId());
+
+                if (result > 0) {
+                    if (exhibit.getPhoto() != null && !exhibit.getPhoto().isEmpty()) {
+                        Files.deleteIfExists(Path.of("images", exhibit.getPhoto()));
                     }
+                    ExhibitRepository.getExhibits().remove(exhibit);
+                    totalCountLabel.setText("Всего: " + filteredExhibits.size());
 
-                    // Удаление из БД
-                    String query = "DELETE FROM exhibits WHERE id = ?";
-                    DBHandler.executeUpdate(query, selected.getId());
+                    animateDetailsCard(false);
 
-                    service.openAlert(Alert.AlertType.INFORMATION, "Экспонат успешно удален", "Успешно");
-                    loadExhibits();
-                    totalCountLabel.setText("Всего: " + exhibitsTable.getItems().size());
+                    service.openAlert(Alert.AlertType.INFORMATION,
+                            "Предмет успешно удален!", "Успешно!");
 
-                    // Сброс карточки деталей
-                    name.setText("Экспонат не выбран");
-                    status.setText("—");
-                    KPPNumber.setText("—");
-                    detailsCard.setPrefWidth(10);
-                    detailsCard.setStyle("-fx-background-color: #7CB4CF;");
-                    contentDetailsCard.setVisible(false);
+                } else if (result == -2) {
+                    service.openAlert(Alert.AlertType.WARNING,
+                            "Невозможно удалить предмет: он связан с одним или несколькими документами.\n" +
+                                    "Сначала удалите связанные документы.",
+                            "Удаление запрещено");
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    service.openAlert(Alert.AlertType.ERROR, "Ошибка удаления экспоната: " + e.getMessage(), "Ошибка");
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                service.openAlert(Alert.AlertType.ERROR,
+                        "Ошибка удаления предмета: " + e.getMessage(),
+                        "Ошибка");
             }
         });
 
@@ -426,67 +403,64 @@ public class ExhibitsListFormController {
                 service.openAlert(Alert.AlertType.WARNING, "Выберите экспонат", "Предупреждение");
                 return;
             }
+            try {
+                if ("Архивирован".equals(selected.getStatus())) {
+                    String newStatus = ExhibitRepository.unarchiveExhibit(selected.getId());
+                    selected.setStatus(newStatus);
+                    service.openAlert(Alert.AlertType.INFORMATION,
+                            "Экспонат восстановлен из архива", "Успешно");
+                    applyFilters();
 
-            String currentStatus = selected.getStatus();
-
-            if ("Архивирован".equals(currentStatus)) {
-                // Разархивация - восстанавливаем предыдущий статус
-                try {
-                    String query = "UPDATE exhibits SET " +
-                            "status_id = previous_status_id, " +
-                            "previous_status_id = NULL " +
-                            "WHERE id = ?";
-                    DBHandler.executeUpdate(query, selected.getId());
-                    String queryStatus = "SELECT es.status_name FROM exhibits e " +
-                            "LEFT JOIN exhibit_statuses es ON e.status_id = es.id " +
-                            "WHERE e.id = ?";
-                    ResultSet rs = DBHandler.executeQuery(queryStatus, selected.getId());
-                    if (rs.next()) {
-                        selected.setStatus(rs.getString("status_name"));
-                    }
-                    service.openAlert(Alert.AlertType.INFORMATION, "Экспонат восстановлен из архива", "Успешно");
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    service.openAlert(Alert.AlertType.ERROR, "Ошибка восстановления: " + e.getMessage(), "Ошибка");
-                }
-            } else {
-                // Архивация - сохраняем текущий статус как предыдущий
-                try {
-                    String query = "UPDATE exhibits SET " +
-                            "previous_status_id = status_id, " +
-                            "status_id = (SELECT id FROM exhibit_statuses WHERE status_name = 'Архивирован') " +
-                            "WHERE id = ?";
-                    DBHandler.executeUpdate(query, selected.getId());
+                } else {
+                    ExhibitRepository.archiveExhibit(selected.getId());
                     selected.setStatus("Архивирован");
-                    service.openAlert(Alert.AlertType.INFORMATION, "Экспонат помещен в архив", "Успешно");
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    service.openAlert(Alert.AlertType.ERROR, "Ошибка архивации: " + e.getMessage(), "Ошибка");
+                    service.openAlert(Alert.AlertType.INFORMATION,
+                            "Экспонат помещен в архив", "Успешно");
+                    applyFilters();
                 }
-            }
-            loadExhibitInfo(selected);
-        });
 
-        loadExhibits();
-        totalCountLabel.setText("Всего: " + exhibitsTable.getItems().size());
+                loadExhibitInfo(selected);
+
+            } catch (SQLException e) {
+                service.openAlert(Alert.AlertType.ERROR,
+                        "Ошибка: " + e.getMessage(), "Ошибка");
+                e.printStackTrace();
+            }
+        });
+    }
+
+    // Сброс карточки деталей предмета
+    private void resetDetailsCard() {
+        detailsCard.setPrefWidth(10);
+        contentDetailsCard.setVisible(false);
+        detailsCard.getStyleClass().add("panel-details-closed");
+    }
+
+    private void animateDetailsCard(boolean isOpenDetailsCard) {
+        double targetWidth = isOpenDetailsCard ? 443 : 10;
+        contentDetailsCard.setVisible(isOpenDetailsCard);
+
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(300),
+                new KeyValue(detailsCard.prefWidthProperty(), targetWidth)));
+
+        timeline.play();
+
+        detailsCard.getStyleClass().removeAll("panel-details-open", "panel-details-closed");
+
+        timeline.setOnFinished(e -> {
+            detailsCard.getStyleClass().add(isOpenDetailsCard ? "panel-details-open" : "panel-details-closed");
+        });
     }
 
     private void loadExhibitInfo(Exhibit newSelection) {
-        if (newSelection.photoProperty().get() != null && !newSelection.photoProperty().get().isEmpty()) {
+        imageView.setImage(new Image(Objects.requireNonNull(getClass().getResource("/com/example/museumcatalog/images/picture.png")).toExternalForm()));
+        if (newSelection.photoProperty().get() != null && !newSelection.photoProperty().get().isEmpty() && Files.exists(Path.of("images", newSelection.photoProperty().get()))) {
             imageView.setImage(new Image(new File("images/" + newSelection.photoProperty().get()).toURI().toString()));
-        } else {
-            imageView.setImage(new Image(Objects.requireNonNull(
-                    getClass().getResource("/com/example/" +
-                            "museumcatalog/images/picture.png")).toExternalForm()));
         }
 
-        if ("Архивирован".equals(newSelection.getStatus())) {
-            archiveBtn.setText("Разархивировать");
-        } else {
-            archiveBtn.setText("Архивировать");
-        }
+        archiveBtn.setText("Архивирован".equals(newSelection.getStatus())
+                ? "Разархивировать"
+                : "Архивировать");
 
         name.setText(nonNullOrDash(newSelection.nameProperty().get()));
         status.setText(nonNullOrDash(newSelection.statusProperty().get()));
@@ -494,18 +468,23 @@ public class ExhibitsListFormController {
         status.setStyle("-fx-text-fill: " + statusColor + ";");
         statusCircle.setFill(Paint.valueOf(statusColor));
         KPPNumber.setText(nonNullOrDash(newSelection.numberKPProperty().get()));
+
         arrivalDate.setText(nonNullOrDash(newSelection.arrivalDateProperty().get()));
         description.setText(nonNullOrDash(newSelection.descriptionProperty().get()));
         fund.setText(nonNullOrDash(newSelection.fundProperty().get()));
         collection.setText(nonNullOrDash(newSelection.collectionProperty().get()));
+        owner.setText(nonNullOrDash(newSelection.ownerFioProperty().get()));
 
-        dimensions.setText(nonNullOrDash(String.valueOf(newSelection.lengthProperty().get())) + " x " +
-                nonNullOrDash(String.valueOf(newSelection.widthProperty().get())) + " x " +
-                nonNullOrDash(String.valueOf(newSelection.heightProperty().get()) + " " + newSelection.unitSizesProperty().get()));
-        weight.setText(nonNullOrDash(String.valueOf(newSelection.weightProperty().get()) + " " + newSelection.unitWeightProperty().get()));
+        dimensions.setText(nonNullOrDash(newSelection.lengthProperty().get()) + " x " +
+                nonNullOrDash(newSelection.widthProperty().get()) + " x " +
+                nonNullOrDash(newSelection.heightProperty().get()) + " " + nonNullOrDash(newSelection.unitSizesProperty().get()));
+        Double w = newSelection.weightProperty().get();
+        String unit = newSelection.getUnitWeight();
+
+        weight.setText(nonNullOrDash(w) + (w == null ? "" : " " + unit));
         color.setText(nonNullOrDash(newSelection.colorProperty().get()));
         material.setText(nonNullOrDash(newSelection.materialProperty().get()));
-        dating.setText(nonNullOrDash(newSelection.datingMaterialProperty().get()));
+        datingMaterial.setText(nonNullOrDash(newSelection.datingMaterialProperty().get()));
         technique.setText(nonNullOrDash(newSelection.techniqueProperty().get()));
 
         source.setText(nonNullOrDash(newSelection.sourceProperty().get()));
@@ -518,39 +497,26 @@ public class ExhibitsListFormController {
         inscriptions.setText(nonNullOrDash(newSelection.inscriptionsProperty().get()));
     }
 
-    private void openDetailsCard() {
-
-        contentDetailsCard.setVisible(true);
-
-        Timeline openAnim = new Timeline(
-                new KeyFrame(Duration.millis(300),
-                        new KeyValue(detailsCard.prefWidthProperty(), 443)
-                )
-        );
-
-        openAnim.play();
-        detailsCard.setStyle("-fx-background-color: #EBEFF0;");
+    private String nonNullOrDash(String value) {
+        return (value == null || value.isEmpty()) ? "—" : value;
+    }
+    private String nonNullOrDash(Double value) {
+        return (value == null || value == 0.0) ? "—" : value.toString();
     }
 
-    private String nonNullOrDash(String value) {
-        if (value == null || value.isEmpty()) {
-            return "—";
-        }
-        return value;
+    private String nonNullOrDash(LocalDate value) {
+        return (value == null) ? "—" : value.toString();
     }
 
     private void updateCollectionsComboBox(String selectedFund) {
         filterCollection.getItems().clear();
-
         if (selectedFund.equals("Все фонды") || selectedFund.equals("Все записи") || selectedFund.equals("Без фонда")) {
-            filterCollection.getItems().clear();
-            filterCollection.getItems().add("Сначала выберите фонд");
-            filterCollection.setValue("Сначала выберите фонд");
             filterCollection.setDisable(true);
+            filterCollection.getItems().add("Сначала выберите фонд");
+            filterCollection.setValue(filterCollection.getItems().getFirst());
         } else {
             try {
                 filterCollection.setDisable(false);
-                filterCollection.getItems().clear();
                 filterCollection.getItems().add("Все коллекции");
                 filterCollection.getItems().addAll(service.getValuesComboBox(
                         "collections c join funds f on c.fund_id = f.id",
@@ -564,126 +530,4 @@ public class ExhibitsListFormController {
             }
         }
     }
-
-    public void loadExhibits() throws SQLException {
-        exhibitsList.clear();
-        exhibitsTable.getItems().clear();
-
-        StringBuilder query = new StringBuilder(
-                "SELECT e.id, e.photo, e.\"name\", e.description, e.length, e.width, e.height, u_sizes.unit_name as unit_sizes, e.weight, u_weight.unit_name  as unit_weight,\n" +
-                        "e.color, e.material, e.dating_material, e.technique, ec.condition_name, e.\"source\",\n" +
-                        "e.arrival_date, e.inscriptions, e.place_of_production, e.production_time, e.\"publication\",\n" +
-                        "e.\"usage\", e.museum_value, es.status_name, f.fund_name, c.collection_name, e.number_kp\n" +
-                        "FROM exhibits e\n" +
-                        "LEFT JOIN exhibit_statuses es ON e.status_id = es.id\n" +
-                        "LEFT JOIN funds f ON e.fund_id = f.id\n" +
-                        "LEFT JOIN collections c ON e.collection_id = c.id\n" +
-                        "LEFT JOIN units u_sizes ON e.unit_sizes_id = u_sizes.id\n" +
-                        "LEFT JOIN units u_weight ON e.unit_weight_id = u_weight.id\n" +
-                        "LEFT JOIN exhibit_conditions ec ON e.condition_id = ec.id\n"
-        );
-
-        ArrayList<Object> params = new ArrayList<>();
-        boolean hasWhere = false;
-
-        // Поиск
-        if (search != null && !search.getText().isEmpty()) {
-            query.append("WHERE (e.\"name\" ILIKE ? OR e.number_kp ILIKE ?) ");
-            String searchText = "%" + search.getText() + "%";
-            params.add(searchText);
-            params.add(searchText);
-            hasWhere = true;
-        }
-
-        // Статус
-        if (filterStatus != null && filterStatus.getValue() != null && !filterStatus.getValue().equals("Все статусы")) {
-            query.append(hasWhere ? " AND " : " WHERE ");
-            query.append("es.status_name = ? ");
-            params.add(filterStatus.getValue());
-            hasWhere = true;
-        }
-
-        // Фонд
-        if (filterFund != null && filterFund.getValue() != null) {
-            String fundValue = filterFund.getValue();
-            if ("Все фонды".equals(fundValue)) {
-                query.append(hasWhere ? " AND " : " WHERE ");
-                query.append("e.fund_id IS NOT NULL ");
-                hasWhere = true;
-            } else if ("Без фонда".equals(fundValue)) {
-                query.append(hasWhere ? " AND " : " WHERE ");
-                query.append("e.fund_id IS NULL ");
-                hasWhere = true;
-            } else if (!"Все записи".equals(fundValue)) {
-                query.append(hasWhere ? " AND " : " WHERE ");
-                query.append("f.fund_name = ? ");
-                params.add(fundValue);
-                hasWhere = true;
-            }
-        }
-
-        // Коллекция
-        if (filterCollection != null && filterCollection.getValue() != null &&
-                !filterCollection.getValue().equals("Все коллекции") &&
-                !filterCollection.getValue().equals("Сначала выберите фонд")) {
-            query.append(hasWhere ? " AND " : " WHERE ");
-            query.append("c.collection_name = ? ");
-            params.add(filterCollection.getValue());
-            hasWhere = true;
-        }
-
-        // Даты
-        if (dateFrom != null && dateFrom.getValue() != null) {
-            query.append(hasWhere ? " AND " : " WHERE ");
-            query.append("e.arrival_date >= ? ");
-            params.add(dateFrom.getValue());
-            hasWhere = true;
-        }
-
-        if (dateTo != null && dateTo.getValue() != null) {
-            query.append(hasWhere ? " AND " : " WHERE ");
-            query.append("e.arrival_date <= ? ");
-            params.add(dateTo.getValue());
-            hasWhere = true;
-        }
-
-        // Выполнение запроса с параметрами
-        ResultSet rs = DBHandler.executeQuery(query.toString(), params.toArray());
-
-        while (rs.next()) {
-            Exhibit exhibit = new Exhibit(
-                    rs.getInt("id"),
-                    rs.getString("photo"),
-                    rs.getString("name"),
-                    rs.getString("description"),
-                    rs.getDouble("length"),
-                    rs.getDouble("width"),
-                    rs.getDouble("height"),
-                    rs.getString("unit_sizes"),
-                    rs.getDouble("weight"),
-                    rs.getString("unit_weight"),
-                    rs.getString("color"),
-                    rs.getString("material"),
-                    rs.getString("dating_material"),
-                    rs.getString("technique"),
-                    rs.getString("condition_name"),
-                    rs.getString("source"),
-                    rs.getString("arrival_date"),
-                    rs.getString("inscriptions"),
-                    rs.getString("place_of_production"),
-                    rs.getString("production_time"),
-                    rs.getString("publication"),
-                    rs.getString("usage"),
-                    rs.getString("museum_value"),
-                    rs.getString("status_name"),
-                    rs.getString("fund_name"),
-                    rs.getString("collection_name"),
-                    rs.getString("number_kp")
-            );
-            exhibitsList.add(exhibit);
-        }
-
-        exhibitsTable.setItems(exhibitsList);
-    }
-
 }
