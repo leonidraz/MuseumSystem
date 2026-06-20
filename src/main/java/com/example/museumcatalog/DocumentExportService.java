@@ -3,19 +3,29 @@ package com.example.museumcatalog;
 import com.example.museumcatalog.Models.*;
 import com.example.museumcatalog.Storages.DocumentRelationsRepository;
 import com.example.museumcatalog.Storages.DocumentTypeDetailsRepository;
+import com.example.museumcatalog.Storages.OwnerRepository;
 
 import java.sql.SQLException;
 import java.util.List;
 
 public class DocumentExportService {
-
     public static FullDocumentData load(Document document) throws SQLException {
 
         FullDocumentData data = new FullDocumentData();
 
         data.setDocument(document);
 
-        List<Employee> employees = DocumentRelationsRepository.getEmployees(document.getId());
+        if (document.getOwnerId() != null) {
+            Owner owner = OwnerRepository.getOwners()
+                    .stream()
+                    .filter(o -> o.getId() == document.getOwnerId())
+                    .findFirst()
+                    .orElse(null);
+
+            data.setOwner(owner);
+        }
+
+        List<DocumentEmployeeRelation> employees = DocumentRelationsRepository.getEmployees(document.getId());
 
         List<Exhibit> exhibits = DocumentRelationsRepository.getExhibits(document.getId());
 
@@ -31,13 +41,13 @@ public class DocumentExportService {
                     data.setEfzkData(efzk.getFirst());
                 }
             }
-            case "Акт внутренней передачи" -> {
+            case "Акт внутримузейной передачи" -> {
                 List<InternalTransferData> transfer = DocumentTypeDetailsRepository.getInternalTransfer(document.getId());
                 if (!transfer.isEmpty()) {
                     data.setInternalTransferData(transfer.getFirst());
                 }
             }
-            case "Акт временного хранения" -> {
+            case "Акт ВП на временное хранение" -> {
                 List<TemporaryStorageData> storage = DocumentTypeDetailsRepository.getTemporaryStorage(document.getId());
                 if (!storage.isEmpty()) {
                     data.setTemporaryStorageData(storage.getFirst());

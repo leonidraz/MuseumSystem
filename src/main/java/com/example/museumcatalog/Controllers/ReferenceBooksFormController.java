@@ -5,8 +5,6 @@ import com.example.museumcatalog.Service;
 import com.example.museumcatalog.Storages.CollectionRepository;
 import com.example.museumcatalog.Storages.EmployeePositionRepository;
 import com.example.museumcatalog.Storages.FundRepository;
-import com.example.museumcatalog.Storages.OwnerRepository;
-import javafx.application.Platform;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
@@ -17,7 +15,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.function.Predicate;
 
 public class ReferenceBooksFormController {
     // Таблица fundsTable
@@ -62,6 +59,7 @@ public class ReferenceBooksFormController {
     @FXML private Label totalCountCollections;
     @FXML private Label totalCountFunds;
     @FXML private Label totalCountPositions;
+    @FXML private VBox positionBlock;
 
     private FilteredList<Fund> filteredFunds;
     private FilteredList<Collection> filteredCollections;
@@ -71,13 +69,15 @@ public class ReferenceBooksFormController {
     Service service = new Service();
 
     public void initialize() throws SQLException {
+        positionBlock.setVisible(false);
+        positionBlock.setManaged(false);
+        service.setupAccessRights(positionBlock);
         setupTableColumns();
         loadTables();
         setupListeners();
         setupButtonHandlers();
 
     }
-
     private void setupTableColumns() {
         // Таблица фондов
         fundNameCol.setCellValueFactory(cell -> cell.getValue().fundNameProperty());
@@ -196,17 +196,10 @@ public class ReferenceBooksFormController {
 
     private void applyPositionSearchFilter(String searchText) {
         String lowerCaseFilter = searchText.toLowerCase().trim();
-
         filteredPositions.setPredicate(position -> {
-
-            String positionName =
-                    position.getPositionName() == null
-                            ? ""
-                            : position.getPositionName().toLowerCase();
-
+            String positionName = position.getPositionName() == null ? "" : position.getPositionName().toLowerCase();
             return positionName.contains(lowerCaseFilter);
         });
-
         updatePositionsCount();
     }
 
@@ -217,8 +210,7 @@ public class ReferenceBooksFormController {
     private void applyCombinedFilter() {
         filteredCollections.setPredicate(collection -> {
             if (selectedFund != null) {
-                if (collection.getFundName() == null ||
-                        !collection.getFundName().equals(selectedFund.getFundName())) {
+                if (collection.getFundName() == null || !collection.getFundName().equals(selectedFund.getFundName())) {
                     return false;
                 }
             }
@@ -240,22 +232,37 @@ public class ReferenceBooksFormController {
     private void setupButtonHandlers() {
         resetFundsBtn.setOnAction(actionEvent -> {
             try {
-                loadFunds();
-            } catch (SQLException e) {
+                fundSearchField.clear();
+                fundsTable.getSelectionModel().clearSelection();
+                fundsTable.getSortOrder().clear();
+                selectedFund = null;
+                Service.setFund(null);
+                clearFundInfo();
+                filteredFunds.setPredicate(p -> true);
+                filteredCollections.setPredicate(p -> true);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
         resetCollectionsBtn.setOnAction(actionEvent -> {
             try {
-                loadCollections();
-            } catch (SQLException e) {
+                collectionSearchField.clear();
+                collectionsTable.getSelectionModel().clearSelection();
+                collectionsTable.getSortOrder().clear();
+                selectedFund = null;
+                filteredCollections.setPredicate(p -> true);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
         resetPositionsBtn.setOnAction(actionEvent -> {
             try {
-                loadPositions();
-            } catch (SQLException e) {
+                positionSearchField.clear();
+                positionsTable.getSelectionModel().clearSelection();
+                positionsTable.getSortOrder().clear();
+                Service.setEmployeePosition(null);
+                filteredPositions.setPredicate(p -> true);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
@@ -285,8 +292,7 @@ public class ReferenceBooksFormController {
                     throw new RuntimeException(e);
                 }
             } else {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите фонд, коллекцию или должность сотрудника из таблиц для редактирования", "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите фонд, коллекцию или должность сотрудника из таблиц для редактирования", "Предупреждение!");
             }
         });
         deleteBtn.setOnAction(actionEvent -> {
@@ -295,9 +301,7 @@ public class ReferenceBooksFormController {
             EmployeePosition selectedPosition = positionsTable.getSelectionModel().getSelectedItem();
 
             if (selectedFund == null && selectedCollection == null && selectedPosition == null) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите фонд, коллекцию или должность для удаления",
-                        "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите фонд, коллекцию или должность для удаления", "Предупреждение!");
                 return;
             }
 
@@ -308,16 +312,14 @@ public class ReferenceBooksFormController {
             String name;
             String type;
 
-            if (isFund) {
-                itemId = selectedFund.getId();
-                name = selectedFund.getFundName();
-                type = "фонд";
-
-            } else if (isCollection) {
+            if (isCollection) {
                 itemId = selectedCollection.getId();
                 name = selectedCollection.getCollectionName();
                 type = "коллекцию";
-
+            } else if (isFund) {
+                itemId = selectedFund.getId();
+                name = selectedFund.getFundName();
+                type = "фонд";
             } else {
                 itemId = selectedPosition.getId();
                 name = selectedPosition.getPositionName();
@@ -341,20 +343,16 @@ public class ReferenceBooksFormController {
                 String successMsg;
                 String errorMsg;
 
-                if (isFund) {
-
-                    deleted = FundRepository.deleteFund(itemId);
-                    successMsg = "Фонд успешно удалён";
-                    errorMsg = "Ошибка удаления фонда";
-                    FundRepository.getFunds().remove(selectedFund);
-
-                } else if (isCollection) {
-
+                if (isCollection) {
                     deleted = CollectionRepository.deleteCollection(itemId);
                     successMsg = "Коллекция успешно удалена";
                     errorMsg = "Ошибка удаления коллекции";
                     CollectionRepository.getCollections().remove(selectedCollection);
-
+                } else if (isFund) {
+                    deleted = FundRepository.deleteFund(itemId);
+                    successMsg = "Фонд успешно удалён";
+                    errorMsg = "Ошибка удаления фонда";
+                    FundRepository.getFunds().remove(selectedFund);
                 } else {
 
                     deleted = EmployeePositionRepository.deletePosition(itemId);
@@ -374,13 +372,9 @@ public class ReferenceBooksFormController {
             } catch (SQLException ex) {
 
                 if ("23503".equals(ex.getSQLState())) {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Невозможно удалить элемент: он связан с другими записями в базе данных.",
-                            "Ошибка удаления");
+                    service.openAlert(Alert.AlertType.WARNING, "Невозможно удалить элемент: он связан с другими записями в базе данных.", "Ошибка удаления");
                 } else {
-                    service.openAlert(Alert.AlertType.ERROR,
-                            "Ошибка базы данных: " + ex.getMessage(),
-                            "Ошибка");
+                    service.openAlert(Alert.AlertType.ERROR, "Ошибка базы данных: " + ex.getMessage(), "Ошибка");
                 }
             }
         });

@@ -13,295 +13,157 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 
-<BorderPane fx:id="rootPane" prefHeight="868.0" prefWidth="1920.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.ReferenceBooksFormController">
-
-    <!-- ====================================================== -->
-    <!-- ======================= CENTER ======================= -->
-    <!-- ====================================================== -->
-
+<BorderPane fx:id="rootPane" prefHeight="868.0" prefWidth="1920.0" stylesheets="@../css/styles.css"
+            xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.museumcatalog.Controllers.ReferenceBooksFormController">
     <center>
-
         <HBox spacing="25.0" BorderPane.alignment="CENTER">
-
-                                          <!-- ====================================================== -->
-            <!-- ================= LEFT COLUMN ======================== -->
-            <!-- ====================================================== -->
-
-                                          <VBox prefHeight="756.0" prefWidth="827.0" spacing="25.0">
-
-                                              <!-- ====================================================== -->
-                <!-- ===================== FUNDS ========================== -->
-                <!-- ====================================================== -->
-
-                                              <VBox prefHeight="756.0" prefWidth="451.0" spacing="18.0" styleClass="panel" VBox.vgrow="ALWAYS">
-
-                                                  <children>
-
-                                                      <!-- HEADER -->
+            <VBox prefHeight="756.0" prefWidth="827.0" spacing="25.0">
+                <VBox prefHeight="756.0" prefWidth="451.0" spacing="18.0" styleClass="panel" VBox.vgrow="ALWAYS">
+                    <children>
                         <HBox alignment="CENTER_LEFT" spacing="20.0">
-
-                                                          <VBox spacing="5.0">
-
-                                                              <Label styleClass="subtitle" text="Фонды" />
-
-                                                              <Label styleClass="placeholder-small" text="Управление музейными фондами" />
-
-                                                          </VBox>
-
-                                                          <Label fx:id="totalCountFunds" styleClass="counter-badge" text="Всего: 0" />
-
-                                                      </HBox>
-
-                                                      <!-- SEARCH -->
+                            <VBox spacing="5.0">
+                                <Label styleClass="subtitle" text="Фонды"/>
+                                <Label styleClass="placeholder-small" text="Управление музейными фондами"/>
+                            </VBox>
+                            <Label fx:id="totalCountFunds" styleClass="counter-badge" text="Всего: 0"/>
+                        </HBox>
                         <HBox alignment="CENTER" spacing="12.0">
+                            <TextField fx:id="fundSearchField" prefHeight="50.0" promptText="Поиск фонда" styleClass="input-field2" HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="resetFundsBtn" prefHeight="42.0" prefWidth="120.0" styleClass="btn-light" text="Обновить"/>
+                        </HBox>
+                        <Separator/>
 
-                                                          <TextField fx:id="fundSearchField" prefHeight="50.0" promptText="Поиск фонда..." styleClass="input-field2" HBox.hgrow="ALWAYS" />
-
-                                                          <Button fx:id="resetFundsBtn" prefHeight="42.0" prefWidth="120.0" styleClass="btn-light" text="Обновить" />
-
-                                                      </HBox>
-
-                                                      <Separator />
-
-                                                      <!-- TABLE -->
                         <TableView fx:id="fundsTable" styleClass="table" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="fundNameCol" prefWidth="254.0" text="Название фонда"/>
+                                <TableColumn fx:id="kpPrefixCol" prefWidth="120.0" text="Шифр фонда"/>
+                            </columns>
+                            <placeholder>
+                                <VBox alignment="CENTER" prefHeight="360.0" prefWidth="479.0" spacing="12.0">
+                                    <Rectangle arcHeight="18.0" arcWidth="18.0" fill="#E5E7EB" height="65.0" width="65.0"/>
+                                    <Label styleClass="placeholder" text="Фонды не найдены"/>
+                                    <Label styleClass="placeholder-small" text="Измените параметры поиска"/>
+                                </VBox>
+                            </placeholder>
+                        </TableView>
 
-                                                          <columns>
-
-                                                              <TableColumn fx:id="fundNameCol" prefWidth="254.0" text="Название фонда" />
-                        <TableColumn fx:id="kpPrefixCol" prefWidth="120.0" text="Шифр фонда" />
-
-                                                          </columns>
-
-                                                          <placeholder>
-
-                                                              <VBox alignment="CENTER" prefHeight="360.0" prefWidth="479.0" spacing="12.0">
-
-                                                                  <Rectangle arcHeight="18.0" arcWidth="18.0" fill="#E5E7EB" height="65.0" width="65.0" />
-
-                                                                  <Label styleClass="placeholder" text="Фонды не найдены" />
-
-                                                                  <Label styleClass="placeholder-small" text="Измените параметры поиска" />
-
-                                                              </VBox>
-
-                                                          </placeholder>
-
-                                                      </TableView>
-
-                                                      <!-- INFO -->
-                        <VBox fx:id="fundInfoPanel" prefHeight="182.0" prefWidth="714.0" spacing="8.0" style="                                   -fx-background-color: #F8FAFC;                                   -fx-background-radius: 14;                                   -fx-border-color: #E2E8F0;                                   -fx-border-radius: 14;                                   -fx-padding: 16;                               ">
-
-                                                          <Label fx:id="selectedFundName" style="                                        -fx-font-size: 17px;                                        -fx-font-weight: bold;                                    " text="Фонд не выбран" wrapText="true" />
-
-                                                          <Label fx:id="selectedFundDesc" style="                                        -fx-font-size: 14px;                                        -fx-text-fill: #64748B;                                    " text="Выберите фонд для просмотра коллекций" wrapText="true" />
-
-                                                      </VBox>
-
-                                                  </children>
-
-                                                  <padding>
-                        <Insets bottom="22.0" left="22.0" right="22.0" top="22.0" />
+                        <VBox fx:id="fundInfoPanel" prefHeight="182.0" prefWidth="714.0" spacing="8.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 14; -fx-border-color: #E2E8F0; -fx-border-radius: 14; -fx-padding: 16;">
+                            <Label fx:id="selectedFundName" style="-fx-font-size: 17px; -fx-font-weight: bold;" text="Фонд не выбран" wrapText="true"/>
+                            <Label fx:id="selectedFundDesc" style="-fx-font-size: 14px; -fx-text-fill: #64748B;" text="Выберите фонд для просмотра коллекций" wrapText="true"/>
+                        </VBox>
+                    </children>
+                    <padding>
+                        <Insets bottom="22.0" left="22.0" right="22.0" top="22.0"/>
                     </padding>
+                </VBox>
+            </VBox>
 
-                                              </VBox>
-
-                                          </VBox>
-
-                                          <!-- ====================================================== -->
-            <!-- ================= COLLECTIONS ======================== -->
-            <!-- ====================================================== -->
-
-                                          <VBox prefHeight="756.0" prefWidth="1367.0" spacing="18.0" styleClass="panel" HBox.hgrow="ALWAYS">
-
-                                              <children>
-
-                                                  <!-- HEADER -->
+            <VBox prefHeight="756.0" prefWidth="1367.0" spacing="18.0" styleClass="panel" HBox.hgrow="ALWAYS">
+                <children>
                     <HBox alignment="CENTER_LEFT" spacing="20.0">
+                        <VBox spacing="5.0">
+                            <Label styleClass="subtitle" text="Коллекции фондов"/>
+                            <Label styleClass="placeholder-small" text="Коллекции выбранного фонда"/>
+                        </VBox>
+                        <Label fx:id="totalCountCollections" styleClass="counter-badge" text="Всего: 0"/>
+                    </HBox>
 
-                                                      <VBox spacing="5.0">
-
-                                                          <Label styleClass="subtitle" text="Коллекции фондов" />
-
-                                                          <Label styleClass="placeholder-small" text="Коллекции выбранного фонда" />
-
-                                                      </VBox>
-
-                                                      <Label fx:id="totalCountCollections" styleClass="counter-badge" text="Всего: 0" />
-
-                                                  </HBox>
-
-                                                  <!-- SEARCH -->
                     <HBox alignment="CENTER" spacing="12.0">
+                        <TextField fx:id="collectionSearchField" prefHeight="50.0" promptText="Поиск коллекции" styleClass="input-field2" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="resetCollectionsBtn" prefHeight="42.0" prefWidth="120.0" styleClass="btn-light" text="Обновить"/>
+                    </HBox>
+                    <Separator/>
 
-                                                      <TextField fx:id="collectionSearchField" prefHeight="50.0" promptText="Поиск коллекции..." styleClass="input-field2" HBox.hgrow="ALWAYS" />
-
-                                                      <Button fx:id="resetCollectionsBtn" prefHeight="42.0" prefWidth="120.0" styleClass="btn-light" text="Обновить" />
-
-                                                  </HBox>
-
-                                                  <Separator />
-
-                                                  <!-- TABLE -->
                     <TableView fx:id="collectionsTable" prefHeight="532.0" prefWidth="1251.0" styleClass="table" VBox.vgrow="ALWAYS">
-
-                                                      <columns>
-
-                                                          <TableColumn fx:id="collectionNameCol" prefWidth="340.0" text="Название коллекции" />
-
-                                                          <TableColumn fx:id="collectionFundCol" minWidth="0.0" prefWidth="238.0" text="Фонд" />
-
-                                                          <TableColumn fx:id="collectionDescriptionCol" minWidth="0.0" prefWidth="750.0" text="Описание" />
-
-                                                      </columns>
-
-                                                      <placeholder>
-
-                                                          <VBox alignment="CENTER" spacing="14.0">
-
-                                                              <Rectangle arcHeight="20.0" arcWidth="20.0" fill="#E5E7EB" height="75.0" width="75.0" />
-
-                                                              <Label styleClass="placeholder" text="Коллекции отсутствуют" />
-
-                                                              <Label styleClass="placeholder-small" text="Измените параметры поиска или поменяйте фонд" />
-
-                                                          </VBox>
-
-                                                      </placeholder>
-
-                                                  </TableView>
-
-                                              </children>
-
-                                              <padding>
-                    <Insets bottom="22.0" top="22.0" />
+                        <columns>
+                            <TableColumn fx:id="collectionNameCol" prefWidth="340.0" text="Название коллекции"/>
+                            <TableColumn fx:id="collectionFundCol" minWidth="0.0" prefWidth="238.0" text="Фонд"/>
+                            <TableColumn fx:id="collectionDescriptionCol" minWidth="0.0" prefWidth="750.0" text="Описание"/>
+                        </columns>
+                        <placeholder>
+                            <VBox alignment="CENTER" spacing="14.0">
+                                <Rectangle arcHeight="20.0" arcWidth="20.0" fill="#E5E7EB" height="75.0" width="75.0"/>
+                                <Label styleClass="placeholder" text="Коллекции отсутствуют"/>
+                                <Label styleClass="placeholder-small" text="Измените параметры поиска или поменяйте фонд"/>
+                            </VBox>
+                        </placeholder>
+                    </TableView>
+                </children>
+                <padding>
+                    <Insets bottom="22.0" top="22.0"/>
                 </padding>
+            </VBox>
 
-                                          </VBox>
+            <VBox fx:id="positionBlock" maxHeight="922.0" prefHeight="718.0" prefWidth="801.0" spacing="18.0" styleClass="panel">
+                <children>
+                    <HBox alignment="CENTER_LEFT" spacing="20.0">
+                        <VBox spacing="5.0">
+                            <Label styleClass="subtitle" text="Должности"/>
+                            <Label styleClass="placeholder-small" text="Должности сотрудников музея"/>
+                        </VBox>
+                        <Label fx:id="totalCountPositions" styleClass="counter-badge" text="Всего: 0"/>
+                    </HBox>
 
-                                           <!-- ====================================================== -->
-             <!-- ==================== POSITIONS ======================= -->
-             <!-- ====================================================== -->
+                    <HBox alignment="CENTER" spacing="12.0">
+                        <TextField fx:id="positionSearchField" prefHeight="50.0" promptText="Поиск должности" styleClass="input-field2" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="resetPositionsBtn" prefHeight="42.0" prefWidth="120.0" styleClass="btn-light" text="Обновить"/>
+                    </HBox>
+                    <Separator/>
 
-                                           <VBox maxHeight="922.0" prefHeight="718.0" prefWidth="801.0" spacing="18.0" styleClass="panel">
-
-                                               <children>
-
-                                                   <!-- HEADER -->
-                     <HBox alignment="CENTER_LEFT" spacing="20.0">
-
-                                                       <VBox spacing="5.0">
-
-                                                           <Label styleClass="subtitle" text="Должности" />
-
-                                                           <Label styleClass="placeholder-small" text="Должности сотрудников музея" />
-
-                                                       </VBox>
-
-                                                       <Label fx:id="totalCountPositions" styleClass="counter-badge" text="Всего: 0" />
-
-                                                   </HBox>
-
-                                                   <!-- SEARCH -->
-                     <HBox alignment="CENTER" spacing="12.0">
-
-                                                       <TextField fx:id="positionSearchField" prefHeight="50.0" promptText="Поиск должности..." styleClass="input-field2" HBox.hgrow="ALWAYS" />
-
-                                                       <Button fx:id="resetPositionsBtn" prefHeight="42.0" prefWidth="120.0" styleClass="btn-light" text="Обновить" />
-
-                                                   </HBox>
-
-                                                   <Separator />
-
-                                                   <!-- TABLE -->
-                     <TableView fx:id="positionsTable" prefHeight="608.0" prefWidth="483.0" styleClass="table">
-
-                                                       <columns>
-
-                                                           <TableColumn fx:id="positionNameCol" prefWidth="362.0" text="Название должности" />
-
-                                                       </columns>
-
-                                                       <placeholder>
-
-                                                           <VBox alignment="CENTER" prefHeight="286.0" prefWidth="452.0" spacing="10.0">
-
-                                                               <Rectangle arcHeight="16.0" arcWidth="16.0" fill="#E5E7EB" height="55.0" width="55.0" />
-
-                                                               <Label styleClass="placeholder" text="Должности отсутствуют" />
-                        <Label styleClass="placeholder-small" text="Измените параметры поиска" />
-
-                                                           </VBox>
-
-                                                       </placeholder>
-
-                                                   </TableView>
-
-                                               </children>
-
-                                               <padding>
-                     <Insets bottom="22.0" left="22.0" right="22.0" top="22.0" />
-                 </padding>
-
-                                           </VBox>
-
+                    <TableView fx:id="positionsTable" prefHeight="608.0" prefWidth="483.0" styleClass="table">
+                        <columns>
+                            <TableColumn fx:id="positionNameCol" prefWidth="362.0" text="Название должности"/>
+                        </columns>
+                        <placeholder>
+                            <VBox alignment="CENTER" prefHeight="286.0" prefWidth="452.0" spacing="10.0">
+                                <Rectangle arcHeight="16.0" arcWidth="16.0" fill="#E5E7EB" height="55.0" width="55.0"/>
+                                <Label styleClass="placeholder" text="Должности отсутствуют"/>
+                                <Label styleClass="placeholder-small" text="Измените параметры поиска"/>
+                            </VBox>
+                        </placeholder>
+                    </TableView>
+                </children>
+                <padding>
+                    <Insets bottom="22.0" left="22.0" right="22.0" top="22.0"/>
+                </padding>
+            </VBox>
         </HBox>
-
     </center>
 
-    <!-- ====================================================== -->
-    <!-- ================= ACTION PANEL ======================= -->
-    <!-- ====================================================== -->
-
     <bottom>
-
         <HBox alignment="CENTER" spacing="15.0" styleClass="panel">
-
             <children>
-
                 <Button fx:id="addBtn" text="Добавить">
-
                     <styleClass>
-                        <String fx:value="btn-add" />
-                        <String fx:value="btn-panel-details" />
+                        <String fx:value="btn-add"/>
+                        <String fx:value="btn-panel-details"/>
                     </styleClass>
-
                 </Button>
-
                 <Button fx:id="editBtn" text="Редактировать">
-
                     <styleClass>
-                        <String fx:value="btn-edit" />
-                        <String fx:value="btn-panel-details" />
+                        <String fx:value="btn-edit"/>
+                        <String fx:value="btn-panel-details"/>
                     </styleClass>
-
                 </Button>
-
                 <Button fx:id="deleteBtn" text="Удалить">
-
                     <styleClass>
-                        <String fx:value="btn-delete" />
-                        <String fx:value="btn-panel-details" />
+                        <String fx:value="btn-delete"/>
+                        <String fx:value="btn-panel-details"/>
                     </styleClass>
-
                 </Button>
-
             </children>
 
             <padding>
-                <Insets bottom="16.0" left="22.0" right="22.0" top="16.0" />
+                <Insets bottom="16.0" left="22.0" right="22.0" top="16.0"/>
             </padding>
 
             <BorderPane.margin>
-                <Insets left="500.0" right="500.0" top="20.0" />
+                <Insets left="500.0" right="500.0" top="20.0"/>
             </BorderPane.margin>
-
         </HBox>
-
     </bottom>
-
     <padding>
-        <Insets left="40.0" right="40.0" />
+        <Insets left="40.0" right="40.0"/>
     </padding>
-
 </BorderPane>

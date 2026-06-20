@@ -19,14 +19,10 @@
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="880.0" prefWidth="1380.0" style="-fx-background-color: white; -fx-background-radius: 12px; -fx-border-color: #333333; -fx-border-width: 2px;" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.ExhibitRegistrationForm">
-
-    <!-- Акцентная полоса сверху для выделения -->
     <top>
         <VBox prefHeight="90.0" prefWidth="1380.0" style="-fx-background-color: white;" BorderPane.alignment="CENTER">
             <children>
-                <!-- Цветная акцентная полоса -->
                 <HBox prefHeight="6.0" prefWidth="1380.0" style="-fx-background-color: #7CB4CF;" />
-
                 <HBox alignment="CENTER" fillHeight="false" prefHeight="72.0" prefWidth="1380.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 0 0 10px 10px;">
                     <VBox.margin>
                         <Insets left="40.0" right="40.0" top="15.0" />
@@ -47,10 +43,8 @@
         <ScrollPane fitToWidth="true" prefHeight="1942.0" prefWidth="1376.0" style="-fx-background-color: white;">
             <content>
                 <HBox spacing="35.0" style="-fx-background-color: white; -fx-padding: 30px;">
-                    <!-- ЛЕВАЯ КОЛОНКА: Основная информация об экспонате -->
                     <VBox spacing="20.0" HBox.hgrow="ALWAYS">
 
-                        <!-- Фотография -->
                         <VBox spacing="15.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                             <children>
                                 <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Фотография предмета" />
@@ -90,7 +84,6 @@
                             </children>
                         </VBox>
 
-                        <!-- Основная информация -->
                         <VBox prefWidth="651.0" spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                             <children>
                                 <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Основная информация *" />
@@ -152,7 +145,6 @@
                             </children>
                         </VBox>
 
-                        <!-- Размеры и вес -->
                         <VBox prefHeight="240.0" prefWidth="651.0" spacing="15.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                             <children>
                                 <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Размеры и вес *" />
@@ -210,7 +202,6 @@
                             </children>
                         </VBox>
 
-                        <!-- Источник и сохранность -->
                         <VBox spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                             <children>
                                 <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Источник поступления и сохранность *" />
@@ -233,7 +224,6 @@
                                     </children>
                                 </HBox>
 
-                                <!-- 🟢 ПОЛЕ ДЕТАЛЕЙ СОХРАННОСТИ -->
                                 <VBox fx:id="conditionDetailsBlock" spacing="8.0">
                                     <children>
                                         <Label style="-fx-font-size: 17px; -fx-text-fill: #333333;" text="Детали сохранности" />
@@ -251,16 +241,13 @@
                         </VBox>
                     </VBox>
 
-                    <!-- ПРАВАЯ КОЛОНКА: Владелец + Дополнительная информация -->
                     <VBox prefWidth="640.0" spacing="20.0">
 
-                        <!-- Владелец (только выбор из существующих) -->
                         <VBox prefWidth="596.0" spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 22px 25px;">
                             <children>
                                 <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Информация о владельце" />
                                 <Label style="-fx-font-size: 16px; -fx-text-fill: #666666;" text="Выберите владельца из базы данных" />
 
-                                <!-- Поиск владельца -->
                                 <VBox spacing="12.0">
                                     <children>
                                         <Label style="-fx-font-size: 17px; -fx-text-fill: #333333;" text="Поиск владельца" />
@@ -273,7 +260,6 @@
                                     </children>
                                 </VBox>
 
-                                <!-- Таблица результатов поиска -->
                                 <VBox spacing="10.0">
                                     <children>
                                         <Label style="-fx-font-size: 17px; -fx-text-fill: #333333;" text="Результаты поиска" />
@@ -287,8 +273,8 @@
                                             <placeholder>
                                                 <VBox alignment="CENTER" prefHeight="150.0" spacing="10.0" style="-fx-padding: 20px;">
                                                     <children>
-                                                        <Label style="-fx-font-size: 17px; -fx-text-fill: #666666;" text="Начните вводить данные для поиска владельца" />
-                                                        <Label style="-fx-font-size: 15px; -fx-text-fill: #9E9E9E;" text="или нажмите 🔍 для отображения всех владельцев" />
+                                                        <Label style="-fx-font-size: 17px; -fx-text-fill: #666666;" text="Владельцы не найдены" />
+                                                        <Label style="-fx-font-size: 15px; -fx-text-fill: #9E9E9E;" text="Измените параметры поиска" />
                                                     </children>
                                                 </VBox>
                                             </placeholder>
@@ -300,13 +286,11 @@
 
                                 <Separator />
 
-                                <!-- Карточка выбранного владельца -->
                                 <VBox prefHeight="215.0" prefWidth="546.0" spacing="13.0" style="-fx-background-color: white; -fx-background-radius: 10px; -fx-padding: 22px; -fx-border-color: #E0E0E0; -fx-border-width: 1px;">
                                     <children>
                                         <Label style="-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Выбранный владелец" />
 
                                         <VBox fx:id="selectedOwnerCard" prefHeight="145.0" prefWidth="500.0" spacing="10.0">
-                                            <!-- Состояние: владелец НЕ выбран -->
                                             <VBox fx:id="ownerNotSelected" spacing="8.0" visible="true">
                                                 <children>
                                                     <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #9E9E9E;" text="Владелец не выбран" />
@@ -314,7 +298,6 @@
                                                 </children>
                                             </VBox>
 
-                                            <!-- Состояние: владелец ВЫБРАН -->
                                             <VBox fx:id="ownerSelected" minHeight="30.0" prefHeight="54.0" prefWidth="500.0" spacing="8.0" visible="false">
                                                 <children>
                                                     <Label fx:id="selectedOwnerFio" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #7CB4CF;" wrapText="true" />
@@ -329,7 +312,6 @@
                             </children>
                         </VBox>
 
-                        <!-- Дополнительная информация -->
                         <VBox spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 22px 25px;">
                             <children>
                                 <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Дополнительная информация" />

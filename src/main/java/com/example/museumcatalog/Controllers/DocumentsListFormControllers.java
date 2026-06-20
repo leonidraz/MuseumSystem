@@ -6,6 +6,7 @@ import com.example.museumcatalog.Models.Exhibit;
 import com.example.museumcatalog.Models.FullDocumentData;
 import com.example.museumcatalog.Models.Owner;
 import com.example.museumcatalog.Service;
+import com.example.museumcatalog.Storages.DocumentRelationsRepository;
 import com.example.museumcatalog.Storages.DocumentRepository;
 import com.example.museumcatalog.Storages.ExhibitRepository;
 import com.example.museumcatalog.Storages.OwnerRepository;
@@ -14,13 +15,16 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class DocumentsListFormControllers {
 
@@ -52,6 +56,7 @@ public class DocumentsListFormControllers {
     @FXML private Button editDocBtn;
     @FXML private Button deleteDocBtn;
     @FXML private Button exportBtn;
+    @FXML private Button refreshBtn;
 
     //Другие элементы
     @FXML private Label totalCountLabel;
@@ -144,69 +149,94 @@ public class DocumentsListFormControllers {
                     return false;
                 }
             }
+            // Фильтрация по ФИО или паспортным данным владельца
+            String ownerText = ownerSearch.getText();
+            if (ownerText != null && !ownerText.isBlank()) {
 
-            //Поиск по владельцу
-            if (ownerSearch != null && !ownerSearch.getText().isBlank()) {
-                String q = ownerSearch.getText().toLowerCase();
-                if (doc.getOwner() == null || !doc.getOwner().toLowerCase().contains(q)) {
+                String t = ownerText.toLowerCase().replaceAll("\\s+", "");
+
+                Owner owner = OwnerRepository.getOwners().stream()
+                        .filter(o -> Objects.equals(o.getId(), doc.getOwnerId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (owner == null) return false;
+
+                System.out.println(owner.getFullFio());
+
+                String fio = owner.getFullFio().toLowerCase().replaceAll("\\s+", "");
+                String series = owner.getPassportSeries() == null ? "" :
+                        owner.getPassportSeries().toLowerCase().replaceAll("\\s+", "");
+                String passport = owner.getPassportNumber() == null ? "" :
+                        owner.getPassportNumber().toLowerCase().replaceAll("\\s+", "");
+
+                String fullPassport = series + passport;
+
+                if (!fio.contains(t)
+                        && !series.contains(t)
+                        && !passport.contains(t)
+                        && !fullPassport.contains(t)) {
                     return false;
                 }
             }
-
-            //По количеству предметов
+            //По предметам
             if (exhibitSearch != null && !exhibitSearch.getText().isBlank()) {
+                String q = exhibitSearch.getText().toLowerCase();
                 try {
-                    int count = Integer.parseInt(exhibitSearch.getText());
-                    if (doc.getExhibitsCount() == null || doc.getExhibitsCount() != count) {
+                    boolean found = DocumentRelationsRepository.getExhibits(doc.getId())
+                            .stream()
+                            .anyMatch(ex -> (ex.getName() != null && ex.getName().toLowerCase().contains(q)) || (ex.getNumberKP() != null && ex.getNumberKP().toLowerCase().contains(q)));
+                    if (!found) {
                         return false;
                     }
-                } catch (NumberFormatException e) {
+                } catch (SQLException e) {
+                    e.printStackTrace();
                     return false;
                 }
             }
-
             //Фильтр по статусу
-            if (filterDocStatus != null && filterDocStatus.getValue() != null
-                    && !filterDocStatus.getValue().equals("Все статусы")) {
-
-                if (doc.getDocStatus() == null ||
-                        !doc.getDocStatus().equals(filterDocStatus.getValue())) {
+            if (filterDocStatus != null && filterDocStatus.getValue() != null && !filterDocStatus.getValue().equals("Все статусы")) {
+                if (doc.getDocStatus() == null || !doc.getDocStatus().equals(filterDocStatus.getValue())) {
                     return false;
                 }
             }
-
             //Фильтр по типу
-            if (filterDocType != null && filterDocType.getValue() != null
-                    && !filterDocType.getValue().equals("Все типы")) {
-
-                if (doc.getDocType() == null ||
-                        !doc.getDocType().equals(filterDocType.getValue())) {
+            if (filterDocType != null && filterDocType.getValue() != null && !filterDocType.getValue().equals("Все типы")) {
+                if (doc.getDocType() == null || !doc.getDocType().equals(filterDocType.getValue())) {
                     return false;
                 }
             }
-
             //Дата "от"
             if (dateFrom != null && dateFrom.getValue() != null) {
-                if (doc.getDocDate() == null ||
-                        doc.getDocDate().toLocalDate().isBefore(dateFrom.getValue())) {
+                if (doc.getDocDate() == null || doc.getDocDate().toLocalDate().isBefore(dateFrom.getValue())) {
                     return false;
                 }
             }
-
             //Дата "до"
             if (dateTo != null && dateTo.getValue() != null) {
-                if (doc.getDocDate() == null ||
-                        doc.getDocDate().toLocalDate().isAfter(dateTo.getValue())) {
+                if (doc.getDocDate() == null || doc.getDocDate().toLocalDate().isAfter(dateTo.getValue())) {
                     return false;
                 }
             }
             return true;
         });
-
         totalCountLabel.setText("Всего: " + filteredDocuments.size());
     }
 
     private void setupButtonHandlers() {
+        refreshBtn.setOnAction(actionEvent -> {
+            search.clear();
+            ownerSearch.clear();
+            exhibitSearch.clear();
+            filterDocStatus.setValue("Все статусы");
+            filterDocType.setValue("Все типы");
+            dateFrom.setValue(null);
+            dateTo.setValue(null);
+            documentsTable.getSortOrder().clear();
+            documentsTable.getSelectionModel().clearSelection();
+            filteredDocuments.setPredicate(doc -> true);
+        });
+
         createDocBtn.setOnAction(actionEvent -> {
             try {
                 Service.openModal("UniversalDocumentForm", "Создание документа",
@@ -218,10 +248,8 @@ public class DocumentsListFormControllers {
             }
         });
 
-
         editDocBtn.setOnAction(actionEvent -> {
             Document selected = documentsTable.getSelectionModel().getSelectedItem();
-
             if (selected != null) {
                 if ("Проведен".equals(selected.getDocStatus())) {
                     editDocBtn.setText("Просмотреть");
@@ -229,16 +257,11 @@ public class DocumentsListFormControllers {
                     editDocBtn.setText("Редактировать");
                 }
             } else {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите документ из таблицы для редактирования", "Внимание");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите черновик документа из таблицы для редактирования", "Предупреждение!");
                 return;
             }
-
-            // Сохраняем выбранный документ в Service
             Service.setEditingDocument(selected);
-
             try {
-                // Открываем модальное окно
                 Service.openModal("UniversalDocumentForm", "Редактирование документа",
                         (Stage) editDocBtn.getScene().getWindow());
                 applyFilters();
@@ -250,77 +273,69 @@ public class DocumentsListFormControllers {
         deleteDocBtn.setOnAction(actionEvent -> {
             Document selected = documentsTable.getSelectionModel().getSelectedItem();
             if (selected == null) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите черновик документа из таблицы для удаления",
-                        "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите черновик документа из таблицы для удаления", "Предупреждение!");
                 return;
             }
             if ("Проведен".equals(selected.getDocStatus())) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Проведенные документы удалять нельзя",
-                        "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Проведенные документы удалять нельзя", "Предупреждение!");
                 return;
             }
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                    "Удалить черновик документа?\n",
-                    ButtonType.YES, ButtonType.NO);
-
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Удалить черновик документа?\n", ButtonType.YES, ButtonType.NO);
             confirm.setTitle("Подтверждение удаления");
 
             if (confirm.showAndWait().get() != ButtonType.YES) return;
-
             try {
                 boolean deleted = DocumentRepository.deleteDocument(selected.getId());
-
                 if (deleted) {
                     DocumentRepository.getDocuments().remove(selected);
                     totalCountLabel.setText("Всего: " + filteredDocuments.size());
-
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            "Черновик документа успешно удалён",
-                            "Успех");
+                    service.openAlert(Alert.AlertType.INFORMATION, "Черновик документа успешно удалён", "Успех");
                 } else {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Черновик документа не найден или уже удалён",
-                            "Ошибка");
+                    service.openAlert(Alert.AlertType.WARNING, "Черновик документа не найден или уже удалён", "Ошибка");
                 }
-
             } catch (SQLException ex) {
-                service.openAlert(Alert.AlertType.ERROR,
-                            "Ошибка базы данных: " + ex.getMessage(),
-                            "Ошибка");
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка базы данных: " + ex.getMessage(), "Ошибка");
             }
         });
         exportBtn.setOnAction(e -> {
             try {
                 Document selected = documentsTable.getSelectionModel().getSelectedItem();
+                if (selected == null) {
+                    service.openAlert(Alert.AlertType.WARNING, "Не выбран документ для экспорта", "Предупреждение!");
+                    return;
+                }
+                if (!"Проведен".equals(selected.getDocStatus())) {
+                    service.openAlert(Alert.AlertType.WARNING, "Экспорт доступен только для проведённых документов", "Предупреждение!");
+                    return;
+                }
 
-                FullDocumentData data =
-                        DocumentExportService.load(selected);
+                FileChooser chooser = new FileChooser();
+                chooser.setTitle("Сохранить документ");
+                chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Word Document", "*.docx"));
 
-                Path path = Path.of(
-                        "C:/Users/Leonid/Documents/exports/" +
-                                data.getDocument().getDocNumber() +
-                                ".docx"
-                );
+                String fileName = selected.getDocNumber() != null ? selected.getDocNumber() + ".docx" : "Документ.docx";
+                chooser.setInitialFileName(fileName);
+                File file = chooser.showSaveDialog(documentsTable.getScene().getWindow());
 
-                WordTemplateService.export(data, path);
-
-                System.out.println("Документ экспортирован");
-
+                if (file == null) {
+                    service.openAlert(Alert.AlertType.INFORMATION, "Экспорт отменён пользователем", "Уведомление!");
+                    return;
+                }
+                FullDocumentData data = DocumentExportService.load(selected);
+                WordTemplateService.export(data, file.toPath());
+                service.openAlert(Alert.AlertType.INFORMATION, "Документ успешно сохранён", "Уведомление!");
             } catch (Exception ex) {
                 ex.printStackTrace();
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка при экспорте документа: " + ex.getMessage(), "Ошибка!");
             }
         });
 
     }
-
     private void updateEditButtonText(Document doc) {
         if (doc == null) {
             editDocBtn.setText("Редактировать");
             return;
         }
-
         if ("Проведен".equals(doc.getDocStatus())) {
             editDocBtn.setText("Просмотреть");
         } else {

@@ -1,9 +1,11 @@
 package com.example.museumcatalog.Controllers;
 
-import com.example.museumcatalog.DBHandler;
+import com.example.museumcatalog.*;
 import com.example.museumcatalog.Models.Exhibit;
-import com.example.museumcatalog.Service;
+import com.example.museumcatalog.Models.Owner;
 import com.example.museumcatalog.Storages.ExhibitRepository;
+import com.example.museumcatalog.Storages.OwnerRepository;
+import com.example.museumcatalog.Storages.ReportRepository;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -17,6 +19,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -28,11 +31,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class ExhibitsListFormController {
-
     //Центральная таблица exhibitsTable
     @FXML
     private TableView<Exhibit> exhibitsTable;
@@ -68,10 +71,13 @@ public class ExhibitsListFormController {
     //Кнопки
     @FXML private Button refreshBtn;
     @FXML private Button addBtn;
+    @FXML private Button exportBtn;
+    @FXML private Button historyBtn;
     @FXML private Button editBtn;
     @FXML private Button deleteBtn;
     @FXML private Button archiveBtn;
     @FXML private Button closeDetailsCard;
+    @FXML private Button returnToFundBtn;
 
     //Элементы детальной карточки предмета
     @FXML private ImageView imageView;
@@ -119,16 +125,20 @@ public class ExhibitsListFormController {
     @FXML private VBox contentDetailsCard;
 
     private static final Map<String, String> STATUS_COLORS = Map.of(
-            "На временном хранении", "#2196F3",    // Синий
-            "На рассмотрении ЭФЗК", "#FF9800",    // Оранжевый
-            "Принят ЭФЗК", "#4CAF50",             // Зеленый
-            "Возвращен владельцу", "#9C27B0",     // Фиолетовый
-            "В фонде", "#00BCD4",                 // Бирюзовый
-            "На выставке", "#FF5722",             // Оранжево-красный
-            "Выдан организации", "#795548",       // Коричневый
-            "Архивирован", "#607D8B",             // Серо-синий
-            "В обработке", "#607D8B"              // Серо-синий
+            "На временном хранении", "#2196F3",
+            "На рассмотрении ЭФЗК", "#FF9800",
+            "Принят ЭФЗК", "#4CAF50",
+            "Возвращен владельцу", "#9C27B0",
+            "В фонде", "#00BCD4",
+            "На выставке", "#FF5722",
+            "Выдан организации", "#795548",
+            "Архивирован", "#607D8B",
+            "В обработке", "#607D8B"
     );
+
+    public static final String STATUS_ON_EXHIBITION = "На выставке";
+    public static final String STATUS_ISSUED = "Выдан";
+    public static final String STATUS_IN_FUND = "В фонде";
     Service service = new Service();
     private FilteredList<Exhibit> filteredExhibits;
 
@@ -177,6 +187,7 @@ public class ExhibitsListFormController {
 
     private void setupTableColumns() {
         //Связываем колонки с полями модели
+        exhibitsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         nameColumn.setCellValueFactory(cell -> cell.getValue().nameProperty());
         descColumn.setCellValueFactory(cell -> cell.getValue().descriptionProperty());
         lengthColumn.setCellValueFactory(cell -> cell.getValue().lengthProperty().asObject());
@@ -248,11 +259,28 @@ public class ExhibitsListFormController {
                     return false;
                 }
             }
-            //Фильтрация по ФИО владельца
+            // Фильтрация по ФИО или паспортным данным владельца
             String ownerText = ownerSearch.getText();
             if (ownerText != null && !ownerText.isEmpty()) {
-                if (exhibit.getOwnerFio() == null ||
-                        !exhibit.getOwnerFio().toLowerCase().contains(ownerText.toLowerCase())) {
+
+                String t = ownerText.toLowerCase().replaceAll("\\s+", "");
+
+                Owner owner = OwnerRepository.getOwners().stream()
+                        .filter(o -> o.getId() == exhibit.getOwnerId())
+                        .findFirst()
+                        .orElse(null);
+
+                if (owner == null) return false;
+
+                String fio = owner.getFullFio() == null ? "" : owner.getFullFio().toLowerCase().replaceAll("\\s+", "");
+
+                String passport = owner.getPassportNumber() == null ? "" : owner.getPassportNumber().toLowerCase().replaceAll("\\s+", "");
+
+                String series = owner.getPassportSeries() == null ? "" : owner.getPassportSeries().toLowerCase().replaceAll("\\s+", "");
+
+                String fullPassport = series + passport;
+
+                if (!fio.contains(t) && !passport.contains(t) && !series.contains(t) && !fullPassport.contains(t)) {
                     return false;
                 }
             }
@@ -285,9 +313,7 @@ public class ExhibitsListFormController {
                 }
             }
             //Фильтрация по коллекции
-            if (filterCollection.getValue() != null &&
-                    !filterCollection.getValue().equals("Все коллекции") &&
-                    !filterCollection.getValue().equals("Сначала выберите фонд")) {
+            if (filterCollection.getValue() != null && !filterCollection.getValue().equals("Все коллекции") && !filterCollection.getValue().equals("Сначала выберите фонд")) {
                 if (!filterCollection.getValue().equals(exhibit.getCollection())) {
                     return false;
                 }
@@ -309,6 +335,21 @@ public class ExhibitsListFormController {
     }
 
     private void setupButtonHandlers() {
+        refreshBtn.setOnAction(actionEvent -> {
+            search.clear();
+            ownerSearch.clear();
+
+            filterStatus.setValue("Все статусы");
+            filterFund.setValue("Все записи");
+            dateFrom.setValue(null);
+            dateTo.setValue(null);
+
+            exhibitsTable.getSortOrder().clear();
+
+            applyFilters();
+            animateDetailsCard(false);
+        });
+
         closeDetailsCard.setOnAction(actionEvent -> {
             animateDetailsCard(false);
         });
@@ -330,18 +371,76 @@ public class ExhibitsListFormController {
             }
         });
 
+        exportBtn.setOnAction(e -> {
+
+            try {
+                Exhibit selected = exhibitsTable.getSelectionModel().getSelectedItem();
+                if (selected == null) {service.openAlert(Alert.AlertType.WARNING, "Не выбран предмет для экспорта", "Предупреждение!");
+                    return;
+                }
+                if (selected.getNumberKP() == null || selected.getNumberKP().isBlank()) {
+                    service.openAlert(Alert.AlertType.WARNING, "Нельзя экспортировать карточку: предмет не является МП", "Предупреждение!");
+                    return;
+                }
+
+                FileChooser chooser = new FileChooser();
+                chooser.setTitle("Сохранить карточку МП");
+                chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Word Document", "*.docx"));
+                chooser.setInitialFileName(selected.getName() + ".docx");
+
+                File file = chooser.showSaveDialog(exhibitsTable.getScene().getWindow());
+
+                if (file == null) {
+                    service.openAlert(Alert.AlertType.INFORMATION, "Экспорт отменён пользователем", "Уведомление!");
+                    return;
+                }
+
+                ExhibitCardExport.export(selected, file);
+                service.openAlert(Alert.AlertType.INFORMATION, "Карточка МП успешно сохранена", "Уведомление!");
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка при экспорте карточки МП: " + ex.getMessage(), "Ошибка!");
+            }
+        });
+
+        historyBtn.setOnAction(e -> {
+            List<Exhibit> sel = exhibitsTable.getSelectionModel().getSelectedItems();
+
+            if (sel == null || sel.isEmpty()) {
+                service.openAlert(Alert.AlertType.WARNING, "Выберите один или несколько предметов", "Предупреждение!");return;
+            }
+
+            FileChooser fc = new FileChooser();
+            fc.setTitle("Сохранить отчет");
+            fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel файл (*.xlsx)", "*.xlsx"));
+            fc.setInitialFileName("Отчет о движении_" +
+                    DateTimeUtil.formatDateOnly(java.time.LocalDateTime.now()) + ".xlsx");
+
+            File file = fc.showSaveDialog((Stage) historyBtn.getScene().getWindow());
+            if (file == null) return;
+
+            try {
+                List<Integer> ids = sel.stream().map(Exhibit::getId).toList();
+                var data = ReportRepository.getMovementReport(ids);
+
+                ReportExcelService.export(data, file.toPath(), ReportExcelService.ReportType.MOVEMENT);
+                service.openAlert(Alert.AlertType.INFORMATION, "Отчет успешно сохранён", "Уведомление!");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка при экспорте: " + ex.getMessage(), "Ошибка!");
+            }
+        });
+
         editBtn.setOnAction(actionEvent -> {
             Exhibit selected = exhibitsTable.getSelectionModel().getSelectedItem();
             if (selected == null) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите предмет для редактирования",
-                        "Предупреждение");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите предмет для редактирования", "Предупреждение");
                 return;
             }
-
             try {
                 Service.setExhibit(selected); //передаю объект при редактировании
-                Service.openModal("ExhibitRegistrationForm", "Редактирование экспоната",
+                Service.openModal("ExhibitRegistrationForm", "Редактирование предмета",
                         (Stage) addBtn.getScene().getWindow());
                 loadExhibitInfo(selected);
             } catch (IOException e) {
@@ -357,7 +456,6 @@ public class ExhibitsListFormController {
                         "Предупреждение");
                 return;
             }
-
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle("Подтверждение удаления");
             confirm.setHeaderText("Вы уверены, что хотите удалить предмет?");
@@ -366,10 +464,8 @@ public class ExhibitsListFormController {
             if (confirm.showAndWait().get() != ButtonType.OK) {
                 return;
             }
-
             try {
                 int result = ExhibitRepository.delete(exhibit.getId());
-
                 if (result > 0) {
                     if (exhibit.getPhoto() != null && !exhibit.getPhoto().isEmpty()) {
                         Files.deleteIfExists(Path.of("images", exhibit.getPhoto()));
@@ -379,52 +475,68 @@ public class ExhibitsListFormController {
 
                     animateDetailsCard(false);
 
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            "Предмет успешно удален!", "Успешно!");
+                    service.openAlert(Alert.AlertType.INFORMATION, "Предмет успешно удален!", "Успешно!");
 
                 } else if (result == -2) {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Невозможно удалить предмет: он связан с одним или несколькими документами.\n" +
-                                    "Сначала удалите связанные документы.",
-                            "Удаление запрещено");
-
+                    service.openAlert(Alert.AlertType.WARNING, "Невозможно удалить предмет: он связан с одним или несколькими документами.\n" + "Сначала удалите связанные документы.", "Удаление запрещено");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                service.openAlert(Alert.AlertType.ERROR,
-                        "Ошибка удаления предмета: " + e.getMessage(),
-                        "Ошибка");
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка удаления предмета: " + e.getMessage(), "Ошибка");
             }
         });
 
         archiveBtn.setOnAction(actionEvent -> {
             Exhibit selected = exhibitsTable.getSelectionModel().getSelectedItem();
             if (selected == null) {
-                service.openAlert(Alert.AlertType.WARNING, "Выберите экспонат", "Предупреждение");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите предмет", "Предупреждение");
                 return;
             }
             try {
                 if ("Архивирован".equals(selected.getStatus())) {
                     String newStatus = ExhibitRepository.unarchiveExhibit(selected.getId());
                     selected.setStatus(newStatus);
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            "Экспонат восстановлен из архива", "Успешно");
+                    service.openAlert(Alert.AlertType.INFORMATION, "Предмет восстановлен из архива", "Успешно");
                     applyFilters();
 
                 } else {
                     ExhibitRepository.archiveExhibit(selected.getId());
                     selected.setStatus("Архивирован");
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            "Экспонат помещен в архив", "Успешно");
+                    service.openAlert(Alert.AlertType.INFORMATION, "Предмет помещен в архив", "Успешно");
                     applyFilters();
                 }
 
                 loadExhibitInfo(selected);
 
             } catch (SQLException e) {
-                service.openAlert(Alert.AlertType.ERROR,
-                        "Ошибка: " + e.getMessage(), "Ошибка");
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка: " + e.getMessage(), "Ошибка");
                 e.printStackTrace();
+            }
+        });
+
+        returnToFundBtn.setOnAction(e -> {
+            Exhibit selected = exhibitsTable.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                service.openAlert(Alert.AlertType.WARNING, "Выберите предмет", "Предупреждение");
+                return;
+            }
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Подтверждение возврата");
+            confirm.setHeaderText("Вы уверены, что хотите возвратить предмет?");
+            confirm.setContentText("Предмет \"" + selected.getName() + "\" поменяет свой статус на 'В фонде'.");
+
+            if (confirm.showAndWait().get() != ButtonType.OK) {
+                return;
+            }
+            try {
+                ExhibitRepository.returnToFund(selected.getId());
+                selected.setStatus(STATUS_IN_FUND);
+                loadExhibitInfo(selected);
+                applyFilters();
+                service.openAlert(Alert.AlertType.INFORMATION, "Предмет возвращён в фонд", "Успешно");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка возврата: " + ex.getMessage(), "Ошибка");
             }
         });
     }
@@ -458,9 +570,8 @@ public class ExhibitsListFormController {
             imageView.setImage(new Image(new File("images/" + newSelection.photoProperty().get()).toURI().toString()));
         }
 
-        archiveBtn.setText("Архивирован".equals(newSelection.getStatus())
-                ? "Разархивировать"
-                : "Архивировать");
+        archiveBtn.setText("Архивирован".equals(newSelection.getStatus()) ? "Разархивировать" : "Архивировать");
+        updateReturnToFundButtonVisibility(newSelection);
 
         name.setText(nonNullOrDash(newSelection.nameProperty().get()));
         status.setText(nonNullOrDash(newSelection.statusProperty().get()));
@@ -495,6 +606,13 @@ public class ExhibitsListFormController {
         usage.setText(nonNullOrDash(newSelection.usageProperty().get()));
         museumValue.setText(nonNullOrDash(newSelection.museumValueProperty().get()));
         inscriptions.setText(nonNullOrDash(newSelection.inscriptionsProperty().get()));
+    }
+
+    private void updateReturnToFundButtonVisibility(Exhibit exhibit) {
+        String status = exhibit.getStatus();
+        boolean canReturn = STATUS_ON_EXHIBITION.equals(status) || STATUS_ISSUED.equals(status);
+        returnToFundBtn.setVisible(canReturn);
+        returnToFundBtn.setManaged(canReturn);
     }
 
     private String nonNullOrDash(String value) {

@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserRepository {
-
     private static final ObservableList<User> users = FXCollections.observableArrayList();
 
     public static ObservableList<User> getUsers() {

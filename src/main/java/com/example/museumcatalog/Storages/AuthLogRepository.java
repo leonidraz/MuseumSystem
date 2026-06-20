@@ -79,4 +79,13 @@ public class AuthLogRepository {
             return "unknown";
         }
     }
+
+    public static void deleteOldLogs() throws SQLException {
+        String sql = """
+        DELETE FROM auth_logs
+        WHERE attempt_time < NOW() - INTERVAL '30 days'
+    """;
+
+        DBHandler.executeUpdate(sql);
+    }
 }

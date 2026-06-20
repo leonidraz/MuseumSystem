@@ -57,6 +57,12 @@ public class BaseFormController {
     Service service = new Service();
 
     public void initialize() throws IOException {
+        employeesLabel.setVisible(false);
+        employeesLabel.setManaged(false);
+
+        usersLabel.setVisible(false);
+        usersLabel.setManaged(false);
+
         Service.setBaseFormController(this);
         activeLabel = mainLabel;
         mainLabel.getStyleClass().add("nav-item-active");
@@ -65,10 +71,9 @@ public class BaseFormController {
             updateUserInfo(Service.getCurrentUser());
         });
 
-        updateUserInfo(Service.getCurrentUser());
+        User currentUser = Service.getCurrentUser();
+        updateUserInfo(currentUser);
         exitLabel.setOnAction(actionEvent -> {
-            User currentUser = Service.getCurrentUser();
-
             try {
                 if (currentUser != null) {
                     AuthLogRepository.addLog(
@@ -155,33 +160,30 @@ public class BaseFormController {
     }
 
     private void updateUserInfo(User user) {
-
         if (user == null) {
             fioLabel.setText("— — —");
             roleLabel.setText("");
             return;
         }
 
-        roleLabel.setText(user.getRole());
-
         String fio = user.getEmployeeFio();
-
         if (fio != null && !fio.isEmpty()) {
             fioLabel.setText(user.getShortFio());
         } else {
             fioLabel.setText("— — —");
         }
+        roleLabel.setText(user.getRole());
+
+        service.setupAccessRights(employeesLabel, usersLabel);
     }
 
     public void setActive(Label clickedLabel) {
         if (activeLabel != null) {
             activeLabel.getStyleClass().remove("nav-item-active");
         }
-
         if (!clickedLabel.getStyleClass().contains("nav-item-active")) {
             clickedLabel.getStyleClass().add("nav-item-active");
         }
-
         activeLabel = clickedLabel;
     }
 

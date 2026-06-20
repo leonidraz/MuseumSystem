@@ -17,15 +17,7 @@ public class AuthLog {
     public AuthLog() {
     }
 
-    public AuthLog(int id,
-                   Integer userId,
-                   String login,
-                   String userFio,
-                   String eventType,
-                   boolean success,
-                   String ipAddress,
-                   LocalDateTime dateTime) {
-
+    public AuthLog(int id, Integer userId, String login, String userFio, String eventType, boolean success, String ipAddress, LocalDateTime dateTime) {
         this.id.set(id);
         this.userId.set(userId);
         this.login.set(login);

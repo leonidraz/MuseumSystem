@@ -17,13 +17,10 @@
 <?import javafx.scene.shape.Rectangle?>
 
 <BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="868.0" prefWidth="1920.0" styleClass="app-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.UsersListFormController">
-
     <left>
         <VBox prefHeight="954.0" prefWidth="350.0" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
             <children>
                 <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="40.0" styleClass="subtitle" text="Фильтры" />
-
-                <!-- Фильтры -->
                 <VBox spacing="15.0">
                     <children>
                         <VBox spacing="10.0">
@@ -32,7 +29,6 @@
                                 <ComboBox fx:id="filterUserRole" prefWidth="300.0" promptText="Все роли" styleClass="input-combo" />
                             </children>
                         </VBox>
-
                         <VBox spacing="10.0">
                             <children>
                                 <Label styleClass="field-label" text="Статус" />
@@ -44,7 +40,6 @@
 
                 <Separator styleClass="separator" />
 
-                <!-- Действия -->
                 <VBox prefWidth="300.0" spacing="15.0">
                     <children>
                         <Label styleClass="section-title" text="Действия" />
@@ -81,7 +76,7 @@
                         <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
                      </effect>
                      <styleClass>
-                        <String fx:value="btn-documents" />
+                        <String fx:value="btn-archive" />
                         <String fx:value="btn-panel-details" />
                      </styleClass>
                   </Button>
@@ -93,31 +88,25 @@
             </BorderPane.margin>
         </VBox>
     </left>
-
     <center>
         <VBox spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
             <children>
-                <!-- Заголовок + поиск -->
                 <HBox alignment="CENTER_LEFT" spacing="20.0">
                     <children>
                         <Label styleClass="title" text="Список пользователей" />
                         <Label fx:id="totalCountLabel" styleClass="counter-badge" text="Всего: " />
-
                         <Region HBox.hgrow="ALWAYS" />
-
-                        <TextField fx:id="search" prefHeight="48.0" prefWidth="425.0" promptText="Поиск по логину и ФИО сотрудника..." styleClass="input-field" />
+                        <TextField fx:id="search" prefHeight="48.0" prefWidth="425.0" promptText="Поиск по логину и ФИО сотрудника" styleClass="input-field" />
                     </children>
                 </HBox>
 
-                <!-- Панель управления таблицей -->
                 <HBox alignment="CENTER_LEFT" spacing="15.0">
                     <children>
-                        <Button mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Обновить" />
+                        <Button fx:id="refreshBtn" mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Обновить" />
                         <Region HBox.hgrow="ALWAYS" />
                     </children>
                 </HBox>
 
-                <!-- Таблица документов -->
                 <TableView fx:id="usersTable" prefHeight="680.0" styleClass="table">
                     <columns>
                         <TableColumn fx:id="loginUserColumn" prefWidth="270" text="Логин" />
@@ -142,7 +131,6 @@
             </BorderPane.margin>
         </VBox>
     </center>
-
 
     <padding>
         <Insets left="40.0" right="40.0" />

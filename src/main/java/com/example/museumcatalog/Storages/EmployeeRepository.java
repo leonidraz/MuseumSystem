@@ -13,7 +13,6 @@ public class EmployeeRepository {
     private static final ObservableList<Employee> allEmployees = FXCollections.observableArrayList();
     private static final ObservableList<Employee> activeEmployees = FXCollections.observableArrayList();
 
-    // 🔹 Геттеры
     public static ObservableList<Employee> getAllEmployees() {
         return allEmployees;
     }

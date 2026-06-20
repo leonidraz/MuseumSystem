@@ -17,10 +17,8 @@ public class EmployeeRegistrationFormController {
     @FXML private ComboBox<String> statusCombo;
     @FXML private TextField emailField;
     @FXML private TextField phoneField;
-
     @FXML private Button saveBtn;
     @FXML private Button cancelBtn;
-
     @FXML private Label titleLabel;
 
     private Employee editingEmployee = Service.getEmployee();
@@ -30,7 +28,6 @@ public class EmployeeRegistrationFormController {
     public void initialize() throws SQLException {
         initComboBoxes();
         initButtons();
-
         if (editingEmployee != null) {
             titleLabel.setText("Редактирование сотрудника");
             loadEmployeeData();
@@ -60,17 +57,18 @@ public class EmployeeRegistrationFormController {
             Service.setEmployee(null);
             ((Stage) cancelBtn.getScene().getWindow()).close();
         });
-
         saveBtn.setOnAction(event -> {
             if (!validateRequiredFields()) {
                 service.openAlert(Alert.AlertType.WARNING, "Заполните обязательные поля", "Ошибка");
                 return;
             }
-            String phoneText = phoneField.getText();
-            if (phoneText != null && !phoneText.isEmpty() && !phoneText.matches("\\d{10,11}")) {
-                service.openAlert(Alert.AlertType.WARNING, "Телефон — 10-11 цифр", "Ошибка");
-                service.markFieldAsError(phoneField);
-                return;
+            if (phoneField.getText() != null && !phoneField.getText().isEmpty()) {
+                String digits = phoneField.getText().replaceAll("\\D", "");
+                if (!digits.matches("\\d{10,11}")) {
+                    service.markFieldAsError(phoneField);
+                    service.openAlert(Alert.AlertType.WARNING, "Номер телефона должен содержать от 10 до 11 цифр", "Предупреждение!");
+                    return;
+                }
             }
 
             boolean isUpdate = editingEmployee != null;
@@ -78,7 +76,6 @@ public class EmployeeRegistrationFormController {
                 editingEmployee = new Employee();
                 Service.setEmployee(editingEmployee);
             }
-
             editingEmployee.setLastName(lastNameField.getText().trim());
             editingEmployee.setFirstName(firstNameField.getText().trim());
             editingEmployee.setMiddleName(toNull(middleNameField.getText()));
@@ -94,22 +91,15 @@ public class EmployeeRegistrationFormController {
                         editingEmployee.setId(result);
                         EmployeeRepository.getAllEmployees().add(editingEmployee);
                     }
-                    service.openAlert(
-                            Alert.AlertType.INFORMATION,
-                            isUpdate ? "Данные сотрудника успешно обновлены" : "Сотрудник успешно добавлен", "Успех"
-                    );
+                    service.openAlert(Alert.AlertType.INFORMATION, isUpdate ? "Данные сотрудника успешно обновлены" : "Сотрудник успешно добавлен", "Успех");
+                    titleLabel.setText("Редактирование сотрудника");
+                    statusCombo.setDisable(false);
                 } else {
-                    service.openAlert(
-                            Alert.AlertType.ERROR, "Ошибка при сохранении данных", "Неуспешно!");
+                    service.openAlert(Alert.AlertType.ERROR, "Ошибка при сохранении данных", "Неуспешно!");
                 }
-
             } catch (SQLException e) {
                 e.printStackTrace();
-                service.openAlert(
-                        Alert.AlertType.ERROR,
-                        "Ошибка базы данных",
-                        "Неуспешно!"
-                );
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка базы данных", "Неуспешно!");
             }
         });
     }
@@ -120,7 +110,6 @@ public class EmployeeRegistrationFormController {
         if (isBlank(firstNameField)) {service.markFieldAsError(firstNameField);valid = false;}
         if (positionCombo.getValue() == null) {service.markFieldAsError(positionCombo);valid = false;}
         if (statusCombo.getValue() == null) {service.markFieldAsError(statusCombo);valid = false;}
-
         return valid;
     }
 

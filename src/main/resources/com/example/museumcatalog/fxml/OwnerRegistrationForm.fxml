@@ -11,9 +11,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="880.0" prefWidth="900.0" style="-fx-background-color: white; -fx-background-radius: 12px; -fx-border-color: #333333; -fx-border-width: 2px;" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.OwnerRegistrationFormController">
-
-    <!-- HEADER -->
+<BorderPane prefHeight="600.0" prefWidth="750.0" style="-fx-background-color: white; -fx-background-radius: 12px; -fx-border-color: #333333; -fx-border-width: 2px;" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.OwnerRegistrationFormController">
     <top>
         <VBox style="-fx-background-color: white;">
             <children>
@@ -28,13 +26,11 @@
         </VBox>
     </top>
 
-    <!-- CONTENT -->
     <center>
         <ScrollPane fitToWidth="true" style="-fx-background-color: white;">
             <content>
                 <VBox spacing="20.0" style="-fx-padding: 30px;">
 
-                    <!-- 1. ОСНОВНАЯ ИНФОРМАЦИЯ (ФИО) -->
                     <VBox spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                         <children>
                             <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Основная информация *" />
@@ -57,12 +53,10 @@
                         </children>
                     </VBox>
 
-                    <!-- 2. ПАСПОРТНЫЕ ДАННЫЕ (Все поля: серия, номер, кем выдан, дата) -->
                     <VBox spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                         <children>
                             <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Паспортные данные *" />
 
-                            <!-- Серия, Номер, Дата выдачи -->
                             <HBox spacing="20.0">
                                 <VBox spacing="10.0">
                                     <Label style="-fx-font-size: 17px;" text="Серия *" />
@@ -78,7 +72,6 @@
                                 </VBox>
                             </HBox>
 
-                            <!-- Кем выдан -->
                             <VBox spacing="10.0">
                                 <Label style="-fx-font-size: 17px;" text="Кем выдан *" />
                                 <TextField fx:id="issuedBy" promptText="Например: ОВД района..." styleClass="input-field2" />
@@ -86,18 +79,16 @@
                         </children>
                     </VBox>
 
-                    <!-- 3. КОНТАКТЫ -->
                     <VBox spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                         <children>
                             <Label style="-fx-font-size: 21px; -fx-font-weight: bold;" text="Контактная информация" />
                             <VBox spacing="10.0">
                                 <Label style="-fx-font-size: 17px;" text="Телефон" />
-                                <TextField fx:id="phone" promptText="8 (___) ___-__-__" style="-fx-background-color: white; -fx-border-color: #CCCCCC; -fx-border-radius: 10px; -fx-padding: 12px; -fx-font-size: 17px;" />
+                                <TextField fx:id="phone" promptText="+7 (___) ___-__-__" styleClass="input-field2" />
                             </VBox>
                         </children>
                     </VBox>
 
-                    <!-- 4. АДРЕС -->
                     <VBox spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                         <children>
                             <Label style="-fx-font-size: 21px; -fx-font-weight: bold;" text="Адрес" />
@@ -108,7 +99,6 @@
                         </children>
                     </VBox>
 
-                    <!-- 5. ПРИМЕЧАНИЕ (Поле notice из БД) -->
                     <VBox spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                         <children>
                             <Label style="-fx-font-size: 21px; -fx-font-weight: bold;" text="Примечание" />
@@ -118,13 +108,11 @@
                             </VBox>
                         </children>
                     </VBox>
-
                 </VBox>
             </content>
         </ScrollPane>
     </center>
 
-    <!-- BUTTONS -->
     <bottom>
         <HBox alignment="CENTER_RIGHT" spacing="25.0" style="-fx-background-color: white; -fx-padding: 16px 40px;">
             <children>

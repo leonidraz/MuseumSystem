@@ -50,36 +50,6 @@ public class DBHandler {
 
         return stmt.executeUpdate();
     }
-
-//    public static int executeInsertReturningId(String query, Object... params) throws SQLException {
-//
-//        if (connection == null || connection.isClosed()) {
-//            System.out.println("Подключение к БД закрыто!");
-//            return -1;
-//        }
-//
-//        try (PreparedStatement stmt =
-//                     connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-//
-//            if (params != null) {
-//                for (int i = 0; i < params.length; i++) {
-//                    stmt.setObject(i + 1, params[i]);
-//                }
-//            }
-//
-//            stmt.executeUpdate();
-//
-//            try (ResultSet rs = stmt.getGeneratedKeys()) {
-//                if (rs.next()) {
-//                    return rs.getInt(1);
-//                }
-//            }
-//
-//            return -1;
-//
-//        }
-//    }
-
     public static Object executeReturning(String sql, String column, Object... params) throws SQLException {
 
         if (connection == null || connection.isClosed()) {

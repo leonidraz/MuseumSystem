@@ -126,27 +126,22 @@ public class Exhibit {
         selected.set(value);
     }
 
-    // --- ID ---
     public int getId() { return id.get(); }
     public void setId(int value) { id.set(value); }
     public IntegerProperty idProperty() { return id; }
 
-    // --- Photo ---
     public String getPhoto() { return photo.get(); }
     public void setPhoto(String value) { photo.set(value); }
     public StringProperty photoProperty() { return photo; }
 
-    // --- Name ---
     public String getName() { return name.get(); }
     public void setName(String value) { name.set(value); }
     public StringProperty nameProperty() { return name; }
 
-    // --- Description ---
     public String getDescription() { return description.get(); }
     public void setDescription(String value) { description.set(value); }
     public StringProperty descriptionProperty() { return description; }
 
-    // --- Dimensions ---
     public double getLength() { return length.get(); }
     public void setLength(double value) { length.set(value); }
     public DoubleProperty lengthProperty() { return length; }
@@ -163,7 +158,6 @@ public class Exhibit {
     public void setUnitSizes(String value) { unitSizes.set(value); }
     public StringProperty unitSizesProperty() { return unitSizes; }
 
-    // --- Weight ---
     public Double getWeight() {
         return weight.get();
     }
@@ -178,7 +172,6 @@ public class Exhibit {
     public void setUnitWeight(String value) { unitWeight.set(value); }
     public StringProperty unitWeightProperty() { return unitWeight; }
 
-    // --- Other fields ---
     public String getColor() { return color.get(); }
     public void setColor(String value) { color.set(value); }
     public StringProperty colorProperty() { return color; }

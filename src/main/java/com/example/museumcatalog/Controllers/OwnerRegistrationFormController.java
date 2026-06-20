@@ -1,16 +1,13 @@
 package com.example.museumcatalog.Controllers;
 
-import com.example.museumcatalog.DBHandler;
 import com.example.museumcatalog.Models.Owner;
 import com.example.museumcatalog.Service;
-import com.example.museumcatalog.Storages.ExhibitRepository;
 import com.example.museumcatalog.Storages.OwnerRepository;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
 
 public class OwnerRegistrationFormController {
 
@@ -63,45 +60,41 @@ public class OwnerRegistrationFormController {
 
     private void saveOwner() {
         if (!validateRequiredFields()) {
-            service.openAlert(Alert.AlertType.WARNING,
-                    "Не все обязательные поля заполнены. Поля, подсвеченные красным, необходимо заполнить.",
-                    "Проверка обязательных полей");
+            service.openAlert(Alert.AlertType.WARNING, "Не все обязательные поля заполнены. Поля, подсвеченные красным, необходимо заполнить.", "Проверка обязательных полей");
             return;
         };
 
         // Валидация формата
         if (!passportSeries.getText().matches("\\d{4}")) {
-            service.openAlert(Alert.AlertType.WARNING, "Серия паспорта — 4 цифры", "Ошибка");
+            service.openAlert(Alert.AlertType.WARNING, "Серия паспорта — 4 цифры", "Предупреждение!");
             service.markFieldAsError(passportSeries);
             return;
         }
         if (!passportNumber.getText().matches("\\d{6}")) {
-            service.openAlert(Alert.AlertType.WARNING, "Номер паспорта — 6 цифр", "Ошибка");
+            service.openAlert(Alert.AlertType.WARNING, "Номер паспорта — 6 цифр", "Предупреждение!");
             service.markFieldAsError(passportNumber);
             return;
         }
 
-        String phoneText = phone.getText();
-        if (phoneText != null && !phoneText.isEmpty() && !phoneText.matches("\\d{10,11}")) {
-            service.openAlert(Alert.AlertType.WARNING, "Телефон — 10-11 цифр", "Ошибка");
-            service.markFieldAsError(phone);
-            return;
+        String digits = phone.getText().replaceAll("\\D", "");
+        if (phone.getText() != null && !phone.getText().isEmpty()) {
+            if (!digits.matches("\\d{10,11}")) {
+                service.markFieldAsError(phone);
+                service.openAlert(Alert.AlertType.WARNING, "Номер телефона должен содержать от 10 до 11 цифр", "Предупреждение!");
+                return;
+            }
         }
 
         try {
             int series = Integer.parseInt(passportSeries.getText());
             int number = Integer.parseInt(passportNumber.getText());
 
-            String phoneVal = phone.getText();
-            Long phoneNum = (phoneVal != null && !phoneVal.isEmpty())
-                    ? Long.parseLong(phoneVal)
-                    : null;
-
             Owner owner = Service.getOwner();
             boolean isUpdate = owner != null;
 
             if (!isUpdate) {
                 owner = new Owner();
+                Service.setOwner(owner);
             }
 
             owner.setLastName(lastName.getText());
@@ -111,7 +104,7 @@ public class OwnerRegistrationFormController {
             owner.setPassportNumber(String.valueOf(number));
             owner.setIssuedBy(issuedBy.getText());
             owner.setDateOfIssue(dateOfIssue.getValue());
-            owner.setPhone(phoneNum != null ? String.valueOf(phoneNum) : null);
+            owner.setPhone(phone.getText() != null ? phone.getText() : null);
             owner.setAddress(toNull(address.getText()));
             owner.setNotice(toNull(notice.getText()));
 
@@ -122,23 +115,16 @@ public class OwnerRegistrationFormController {
                     owner.setId(result);
                     OwnerRepository.getOwners().add(owner);
                 }
-                service.openAlert(Alert.AlertType.INFORMATION,
-                        isUpdate ? "Данные обновлены" : "Владелец добавлен",
-                        "Успешно!");
+                service.openAlert(Alert.AlertType.INFORMATION, isUpdate ? "Данные обновлены" : "Владелец добавлен", "Успешно!");
+                titleLabel.setText("Редактирование владельца");
             } else {
-                service.openAlert(Alert.AlertType.ERROR,
-                        "Ошибка при сохранении владельца",
-                        "Неуспешно!");
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка при сохранении владельца", "Неуспешно!");
             }
 
         } catch (NumberFormatException e) {
-            service.openAlert(Alert.AlertType.WARNING,
-                    "Проверьте формат числовых полей",
-                    "Ошибка");
+            service.openAlert(Alert.AlertType.WARNING, "Проверьте формат числовых полей", "Ошибка");
         } catch (SQLException e) {
-            service.openAlert(Alert.AlertType.ERROR,
-                    "Ошибка базы данных: " + e.getMessage(),
-                    "Ошибка!");
+            service.openAlert(Alert.AlertType.ERROR, "Ошибка базы данных: " + e.getMessage(), "Ошибка!");
             e.printStackTrace();
         }
     }

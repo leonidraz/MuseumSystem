@@ -12,8 +12,6 @@
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane prefHeight="620.0" prefWidth="800.0" style="-fx-background-color: white; -fx-background-radius: 12px; -fx-border-color: #333333; -fx-border-width: 2px;" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.UserRegistrationFormController">
-
-    <!-- HEADER -->
     <top>
         <VBox style="-fx-background-color: white;">
             <children>
@@ -28,20 +26,15 @@
         </VBox>
     </top>
 
-    <!-- CONTENT -->
     <center>
         <ScrollPane fitToWidth="true" style="-fx-background-color: white;">
             <content>
                 <VBox spacing="20.0" style="-fx-padding: 30px;">
-
-                    <!-- USER FORM -->
                     <VBox spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
 
                         <Label style="-fx-font-size: 21px; -fx-font-weight: bold;" text="Данные пользователя" />
 
                         <VBox spacing="15.0">
-
-                            <!-- LOGIN / PASSWORD -->
                             <HBox spacing="15.0">
                                 <VBox prefWidth="350.0" spacing="8.0">
                                     <Label style="-fx-font-size: 17px;" text="Логин *" />
@@ -49,21 +42,17 @@
                                 </VBox>
 
                                 <VBox prefWidth="350.0" spacing="8.0">
-                                    <Label style="-fx-font-size: 17px;" text="Пароль *" />
+                                    <Label fx:id="passwordTitle" style="-fx-font-size: 17px;" text="Пароль *" />
                                     <PasswordField fx:id="passwordField" promptText="Введите пароль" styleClass="input-field2" />
                                 </VBox>
                             </HBox>
 
-                            <!-- EMPLOYEE -->
                             <VBox spacing="8.0">
                                 <Label style="-fx-font-size: 17px;" text="Сотрудник" />
                                 <ComboBox fx:id="employeeCombo" prefHeight="52.0" prefWidth="722.0" promptText="Выберите сотрудника" styleClass="input-combo" />
-                                <Label fx:id="employeeErrorLabel"
-                                       text="Нельзя изменить сотрудника: у пользователя уже есть созданные документы"
-                                       style="-fx-text-fill: red; -fx-font-size: 13px;" />
+                                <Label fx:id="employeeErrorLabel" style="-fx-text-fill: red; -fx-font-size: 13px;" text="Нельзя изменить сотрудника: у пользователя уже есть созданные документы" />
                             </VBox>
 
-                            <!-- ROLE / STATUS -->
                             <HBox spacing="15.0">
 
                                 <VBox prefWidth="350.0" spacing="8.0">
@@ -75,21 +64,16 @@
                                     <Label style="-fx-font-size: 17px;" text="Статус *" />
                                     <ComboBox fx:id="statusCombo" prefHeight="52.0" prefWidth="573.0" promptText="Выберите статус" styleClass="input-combo" />
                                 </VBox>
-
                             </HBox>
-
                         </VBox>
                     </VBox>
-
                 </VBox>
             </content>
         </ScrollPane>
     </center>
 
-    <!-- BUTTONS -->
     <bottom>
         <HBox alignment="CENTER_RIGHT" spacing="25.0" style="-fx-background-color: white; -fx-padding: 16px 40px;">
-
             <Button fx:id="cancelBtn" prefWidth="140" style="-fx-background-color: #9E9E9E; -fx-text-fill: white; -fx-background-radius: 10px; -fx-font-size: 18px;" text="Отмена">
                 <effect><DropShadow radius="4" /></effect>
             </Button>
@@ -97,8 +81,6 @@
             <Button fx:id="saveBtn" prefWidth="240" style="-fx-background-color: #7CB4CF; -fx-text-fill: white; -fx-background-radius: 10px; -fx-font-size: 18px;" text="Сохранить">
                 <effect><DropShadow radius="4" /></effect>
             </Button>
-
         </HBox>
     </bottom>
-
 </BorderPane>

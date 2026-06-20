@@ -16,13 +16,11 @@
 <?import javafx.scene.shape.Rectangle?>
 
 <BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="868.0" prefWidth="1920.0" styleClass="app-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.OwnersListFormController">
-
     <left>
         <VBox prefHeight="954.0" prefWidth="350.0" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
             <children>
                 <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="40.0" styleClass="subtitle" text="Поиск по" />
 
-                <!-- Фильтры -->
                 <VBox spacing="15.0">
                     <children>
                         <VBox spacing="10.0">
@@ -70,7 +68,6 @@
 
                 <Separator styleClass="separator" />
 
-                <!-- Действия -->
                 <VBox spacing="15.0">
                     <children>
                         <Label styleClass="section-title" text="Действия" />
@@ -114,7 +111,6 @@
     <center>
         <VBox spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
             <children>
-                <!-- Заголовок + поиск -->
                 <HBox alignment="CENTER_LEFT" spacing="20.0">
                     <children>
                         <Label styleClass="title" text="Список владельцев" />
@@ -122,28 +118,26 @@
 
                         <Region HBox.hgrow="ALWAYS" />
 
-                        <TextField fx:id="globalSearch" prefHeight="48.0" prefWidth="425.0" promptText="Быстрый поиск по всем полям..." styleClass="input-field" />
+                        <TextField fx:id="globalSearch" prefHeight="48.0" prefWidth="425.0" promptText="Быстрый поиск по всем полям" styleClass="input-field" />
                     </children>
                 </HBox>
 
-                <!-- Панель управления таблицей -->
                 <HBox alignment="CENTER_LEFT" spacing="15.0">
                     <children>
-                        <Button fx:id="refreshBtn" mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="🔄 Обновить" />
+                        <Button fx:id="refreshBtn" mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Обновить" />
                         <Region HBox.hgrow="ALWAYS" />
                     </children>
                 </HBox>
 
-                <!-- Таблица владельцев -->
                 <TableView fx:id="ownersTable" prefHeight="680.0" styleClass="table">
                     <columns>
-                        <TableColumn fx:id="fioColumn" prefWidth="130" text="ФИО" />
-                        <TableColumn fx:id="passportColumn" prefWidth="140" text="Паспорт" />
-                        <TableColumn fx:id="phoneColumn" prefWidth="130" text="Телефон" />
-                        <TableColumn fx:id="addressColumn" prefWidth="250" text="Адрес" />
-                        <TableColumn fx:id="issuedByColumn" prefWidth="200" text="Кем выдан" />
-                        <TableColumn fx:id="dateOfIssueColumn" prefWidth="120" text="Дата выдачи" />
-                        <TableColumn fx:id="noticeColumn" prefWidth="300" text="Примечание" />
+                        <TableColumn fx:id="fioColumn" prefWidth="260" text="ФИО" />
+                        <TableColumn fx:id="passportColumn" prefWidth="120" text="Паспорт" />
+                        <TableColumn fx:id="phoneColumn" prefWidth="110" text="Телефон" />
+                        <TableColumn fx:id="addressColumn" prefWidth="280" text="Адрес" />
+                        <TableColumn fx:id="issuedByColumn" prefWidth="250" text="Кем выдан" />
+                        <TableColumn fx:id="dateOfIssueColumn" prefWidth="100" text="Дата выдачи" />
+                        <TableColumn fx:id="noticeColumn" prefWidth="320" text="Примечание" />
                     </columns>
                     <placeholder>
                         <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 40px;">

@@ -7,7 +7,6 @@ import javafx.collections.ObservableList;
 import java.time.LocalDateTime;
 
 public class Document {
-
     private final ObjectProperty<Integer> id = new SimpleObjectProperty<>();
     private final StringProperty docNumber = new SimpleStringProperty();
     private final StringProperty docType = new SimpleStringProperty();
@@ -22,25 +21,9 @@ public class Document {
     private final StringProperty updatedBy = new SimpleStringProperty();
     private final StringProperty base = new SimpleStringProperty();
 
-
-    // 🔹 Пустой конструктор
     public Document() {}
 
-    // 🔹 Полный конструктор
-    public Document(Integer id,
-                    String docNumber,
-                    String docType,
-                    LocalDateTime docDate,
-                    String owner,
-                    Integer ownerId,
-                    Integer exhibitsCount,
-                    String docStatus,
-                    LocalDateTime changeDate,
-                    LocalDateTime conductedDate,
-                    String createdBy,
-                    String updateBy,
-                    String base) {
-
+    public Document(Integer id, String docNumber, String docType, LocalDateTime docDate, String owner, Integer ownerId, Integer exhibitsCount, String docStatus, LocalDateTime changeDate, LocalDateTime conductedDate, String createdBy, String updateBy, String base) {
         this.id.set(id);
         this.docNumber.set(docNumber);
         this.docType.set(docType);
@@ -56,7 +39,6 @@ public class Document {
         this.base.set(base);
     }
 
-    //id
     public Integer getId() {
         return id.get();
     }
@@ -69,7 +51,6 @@ public class Document {
         return id;
     }
 
-    //docNumber
     public String getDocNumber() {
         return docNumber.get();
     }
@@ -82,7 +63,6 @@ public class Document {
         return docNumber;
     }
 
-    //docType
     public String getDocType() {
         return docType.get();
     }
@@ -95,7 +75,6 @@ public class Document {
         return docType;
     }
 
-    //docDate
     public LocalDateTime getDocDate() {
         return docDate.get();
     }
@@ -108,7 +87,6 @@ public class Document {
         return docDate;
     }
 
-    //owner
     public String getOwner() {
         return owner.get();
     }
@@ -121,7 +99,6 @@ public class Document {
         return owner;
     }
 
-    //ownerId
     public Integer getOwnerId() {
         return ownerId.get();
     }
@@ -134,7 +111,6 @@ public class Document {
         return ownerId;
     }
 
-    //exhibitsCount
     public Integer getExhibitsCount() {
         return exhibitsCount.get();
     }
@@ -147,7 +123,6 @@ public class Document {
         return exhibitsCount;
     }
 
-    //docStatus
     public String getDocStatus() {
         return docStatus.get();
     }
@@ -160,7 +135,6 @@ public class Document {
         return docStatus;
     }
 
-    //conductedDate
     public LocalDateTime getConductedDate() {
         return conductedDate.get();
     }
@@ -169,7 +143,6 @@ public class Document {
         this.conductedDate.set(conductedDate);
     }
 
-    //changeDate
     public LocalDateTime getChangeDate() {
         return changeDate.get();
     }
@@ -186,7 +159,6 @@ public class Document {
         return conductedDate;
     }
 
-    //createdBy
     public String getCreatedBy() {
         return createdBy.get();
     }
@@ -199,7 +171,6 @@ public class Document {
         return createdBy;
     }
 
-    //updatedBy
     public String getUpdatedBy() {
         return updatedBy.get();
     }
@@ -212,7 +183,6 @@ public class Document {
         return updatedBy;
     }
 
-    //base
     public String getBase() {
         return base.get();
     }

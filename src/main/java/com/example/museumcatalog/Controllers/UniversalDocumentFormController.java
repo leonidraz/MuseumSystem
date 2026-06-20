@@ -1,6 +1,7 @@
 package com.example.museumcatalog.Controllers;
 
 import com.example.museumcatalog.DateTimeUtil;
+import com.example.museumcatalog.DocumentEmployeeRole;
 import com.example.museumcatalog.Models.*;
 import com.example.museumcatalog.Service;
 import com.example.museumcatalog.Storages.*;
@@ -9,14 +10,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,11 +32,13 @@ public class UniversalDocumentFormController {
     @FXML private Label docNumberLabel, statusLabel, docDateLabel, conductedDateLabel, changeDateLabel;
     @FXML private ComboBox<String> docTypeCombo, efzkFundCombo, efzkCollectionCombo, loanRecipientType;
     @FXML private ComboBox<Employee> transferFromEmployee, transferToEmployee;
+    @FXML private ComboBox<Employee> keeper, deputyDirector, chairman, secretary, acceptedBy;
     @FXML private DatePicker efzkPeriodFrom, efzkPeriodTo;
     @FXML private TextField transferPurpose, loanRecipientName, loanRecipientIdentifier, loanRecipientAddress, loanPurpose, ownerSearch, exhibitSearch, employeeSearch;
 
     // Блоки
-    @FXML private VBox efzkBlock, internalTransferBlock, loanBlock, ownerBlock, exhibitsBlock, staffBlock, basisBlock;
+    @FXML private VBox efzkBlock, internalTransferBlock, loanBlock, ownerBlock, exhibitsBlock, staffBlock, keeperBlock, deputyDirectorBlock, employeeTableBlock;
+    @FXML private HBox keeperDeputyRow, chairmanSecretaryRow, acceptedByRow;
 
     // Таблицы
     @FXML private TableView<Owner> ownersTable;
@@ -52,7 +58,7 @@ public class UniversalDocumentFormController {
     @FXML private Button cancelBtn, saveDraftBtn, completeBtn;
 
     private final ObservableList<Exhibit> exhibitsList = FXCollections.observableArrayList();
-    private final ObservableList<Employee> employeesList = FXCollections.observableArrayList();
+    private final ObservableList<DocumentEmployeeRelation> employeesList = FXCollections.observableArrayList();
     private FilteredList<Owner> filteredOwners;
     private FilteredList<Exhibit> filteredExhibit;
     private FilteredList<Employee> filteredEmployee;
@@ -119,7 +125,7 @@ public class UniversalDocumentFormController {
         initListeners();
         initButtons();
         currentSelectedOwner = null;
-        filteredExhibit.setPredicate(filterExhibitsByOwner(currentSelectedOwner));
+        filteredExhibit.setPredicate(buildExhibitPredicate());
         isInitializing = true;
         if (Service.getEditingDocument() != null) {
             formTitle.setText("Редактирование документа");
@@ -146,16 +152,7 @@ public class UniversalDocumentFormController {
         changeDateLabel.setText(DateTimeUtil.formatForDisplay(doc.getChangeDate()));
 
         DocumentRelationsRepository.loadAllRelations(doc.getId(), employeesList, exhibitsList);
-        System.out.println(employeesList);
-        for (Employee item: EmployeeRepository.getActiveEmployees()) {
-            for (Employee itemTarget: employeesList) {
-                if (item.getId() == itemTarget.getId()) {
-                    item.setSelected(true);
-                    break;
-                }
-            }
-        }
-        selectedEmployeesCount.setText("Выбрано сотрудников: " + getSelectedEmployeesCount());
+
         for (Exhibit item: ExhibitRepository.getExhibits()) {
             for (Exhibit itemTarget: exhibitsList) {
                 if (item.getId() == itemTarget.getId()) {
@@ -165,6 +162,27 @@ public class UniversalDocumentFormController {
             }
         }
         selectedExhibitsCount.setText("Выбрано предметов: " + getSelectedExhibitsCount());
+
+        for (DocumentEmployeeRelation v : employeesList) {
+            Employee emp = v.getEmployee();
+            DocumentEmployeeRole role = v.getRole();
+            switch (role) {
+                case KEEPER -> setEmployee(keeper, emp.getId());
+                case DEPUTY_DIRECTOR -> setEmployee(deputyDirector, emp.getId());
+                case CHAIRMAN -> setEmployee(chairman, emp.getId());
+                case SECRETARY -> setEmployee(secretary, emp.getId());
+                case ACCEPTED_BY -> setEmployee(acceptedBy, emp.getId());
+            }
+        }
+        for (Employee emp : employeesTable.getItems())
+            for (DocumentEmployeeRelation v : employeesList) {
+                if (v.getRole() == DocumentEmployeeRole.PARTICIPANT && v.getEmployee().getId() == emp.getId()) {
+                    emp.setSelected(true);
+                    break;
+                }
+            }
+        selectedEmployeesCount.setText("Выбрано сотрудников: " + getSelectedEmployeesCount());
+
         switch (doc.getDocType()) {
 
             case "Протокол заседания ЭФЗК" -> {
@@ -182,15 +200,8 @@ public class UniversalDocumentFormController {
                 List<InternalTransferData> internalList = DocumentTypeDetailsRepository.getInternalTransfer(doc.getId());
                 if (!internalList.isEmpty()) {
                     InternalTransferData data = internalList.getFirst();
-                    transferFromEmployee.setValue(filteredEmployee.stream()
-                            .filter(emp -> emp.getId() == data.getFromEmployeeId())
-                            .findFirst()
-                            .orElse(null));
-
-                    transferToEmployee.setValue(filteredEmployee.stream()
-                            .filter(emp -> emp.getId() == data.getToEmployeeId())
-                            .findFirst()
-                            .orElse(null));
+                    setEmployee(transferFromEmployee, data.getFromEmployeeId());
+                    setEmployee(transferToEmployee, data.getToEmployeeId());
                     transferPurpose.setText(data.getTransferPurpose());
                 }
             }
@@ -217,6 +228,13 @@ public class UniversalDocumentFormController {
                 }
             }
         }
+    }
+
+    private void setEmployee(ComboBox<Employee> cb, int employeeId) {
+        cb.getItems().stream()
+                .filter(e -> e.getId() == employeeId)
+                .findFirst()
+                .ifPresent(cb::setValue);
     }
 
     private <T> FilteredList<T> initTable(TableView<T> table, ObservableList<T> list, SQLRunnable loadAction) {
@@ -293,10 +311,11 @@ public class UniversalDocumentFormController {
         docTypeCombo.getItems().addAll(service.getValuesComboBox("document_types", "type_name", null));
         efzkFundCombo.getItems().addAll(service.getValuesComboBox("funds", "fund_name", null));
         loanRecipientType.getItems().addAll(service.getValuesComboBox("receiver_types", "type_name", null));
-        transferFromEmployee.setItems(filteredEmployee);
-        transferToEmployee.setItems(filteredEmployee);
-        setupEmployeeComboBox(transferFromEmployee);
-        setupEmployeeComboBox(transferToEmployee);
+        List<ComboBox<Employee>> employeeCombos = List.of(transferFromEmployee, transferToEmployee, keeper, deputyDirector, chairman, secretary, acceptedBy);
+        for (ComboBox<Employee> combo : employeeCombos) {
+            combo.setItems(filteredEmployee);
+            setupEmployeeComboBox(combo);
+        }
     }
 
     private void setupEmployeeComboBox(ComboBox<Employee> cb) {
@@ -318,9 +337,7 @@ public class UniversalDocumentFormController {
         efzkFundCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
             efzkCollectionCombo.getItems().clear();
             try {
-                efzkCollectionCombo.getItems().addAll(service.getValuesComboBox(
-                        "collections c join funds f on c.fund_id = f.id",
-                        "collection_name", "f.fund_name = ?", newVal));
+                efzkCollectionCombo.getItems().addAll(service.getValuesComboBox("collections c join funds f on c.fund_id = f.id", "collection_name", "f.fund_name = ?", newVal));
             } catch (SQLException e) { throw new RuntimeException(e); }
         });
 
@@ -337,7 +354,7 @@ public class UniversalDocumentFormController {
                     } else {
                         currentSelectedOwner = null;
                     }
-                    filteredExhibit.setPredicate(filterExhibitsByOwner(currentSelectedOwner));
+                    filteredExhibit.setPredicate(buildExhibitPredicate());
                 }));
 
         docTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -359,22 +376,35 @@ public class UniversalDocumentFormController {
                 }));
 
         ownerSearch.textProperty().addListener((obs, oldVal, newVal) -> applySearch());
-        exhibitSearch.textProperty().addListener((obs, oldVal, newVal) -> applySearch());
+        exhibitSearch.textProperty().addListener((obs, oldVal, newVal) -> filteredExhibit.setPredicate(buildExhibitPredicate()));
         employeeSearch.textProperty().addListener((obs, oldVal, newVal) -> applySearch());
 
     }
 
-    private Predicate<Exhibit> filterExhibitsByOwner(Owner owner) {
+    private Predicate<Exhibit> buildExhibitPredicate() {
+        String text = exhibitSearch.getText();
+        Owner owner = currentSelectedOwner;
+
         return exhibit -> {
-            if (owner != null) {
-                return exhibit.getOwnerId() == owner.getId();
-            } else {
-                Integer ownerId = exhibit.getOwnerId();
-                return ownerId == null || ownerId == 0;
+            //Фильтр по владельцу
+            if (owner != null && exhibit.getOwnerId() != owner.getId()) {
+                return false;
             }
+            //Поиск по предмету (название или номер КП)
+            if (text != null && !text.isEmpty()) {
+                String t = text.toLowerCase();
+
+                String name = exhibit.getName() == null ? "" : exhibit.getName().toLowerCase();
+                String kp = exhibit.getNumberKP() == null ? "" : exhibit.getNumberKP().toLowerCase();
+
+                if (!name.contains(t) && !kp.contains(t)) {
+                    return false;
+                }
+            }
+
+            return true;
         };
     }
-
     private void applySearch() {
         //Поиск по владельцу (ФИО или паспорт)
         filteredOwners.setPredicate(owner -> {
@@ -384,19 +414,6 @@ public class UniversalDocumentFormController {
                 String fio = owner.getFullFio() == null ? "" : owner.getFullFio().toLowerCase();
                 String passport = owner.getPassport() == null ? "" : owner.getPassport().toLowerCase();
                 if (!fio.contains(t) && !passport.contains(t)) {
-                    return false;
-                }
-            }
-            return true;
-        });
-        //Поиск по предмету (название или номер КП)
-        filteredExhibit.setPredicate(exhibit -> {
-            String text = exhibitSearch.getText();
-            if (text != null && !text.isEmpty()) {
-                String t = text.toLowerCase();
-                String name = exhibit.getName() == null ? "" : exhibit.getName().toLowerCase();
-                String kp = exhibit.getNumberKP() == null ? "" : exhibit.getNumberKP().toLowerCase();
-                if (!name.contains(t) && !kp.contains(t)) {
                     return false;
                 }
             }
@@ -441,16 +458,12 @@ public class UniversalDocumentFormController {
     private void saveDocument(boolean isConducted) throws SQLException {
         if (docTypeCombo.getValue() == null) {
             service.markFieldAsError(docTypeCombo);
-            service.openAlert(Alert.AlertType.WARNING,
-                    "Выберите тип документа",
-                    "Ошибка");
+            service.openAlert(Alert.AlertType.WARNING, "Выберите тип документа", "Ошибка");
             return;
         }
 
         if (!validateRequiredFields()) {
-            service.openAlert(Alert.AlertType.WARNING,
-                    "Заполните обязательные поля",
-                    "Ошибка");
+            service.openAlert(Alert.AlertType.WARNING, "Заполните обязательные поля", "Ошибка");
             return;
         }
 
@@ -493,19 +506,61 @@ public class UniversalDocumentFormController {
                 currentDocument.setId(result);
                 DocumentRepository.getDocuments().add(currentDocument);
             }
-            // --- связи ---
             DocumentRelationsRepository.clearRelations(currentDocument.getId());
+            List<DocumentEmployeeRelation> relations = new ArrayList<>();
+
+            employeesTable.getItems().stream()
+                    .filter(Employee::isSelected)
+                    .forEach(emp -> relations.add(
+                            new DocumentEmployeeRelation(
+                                    emp,
+                                    DocumentEmployeeRole.PARTICIPANT
+                            )
+                    ));
+
+            if (keeper.getValue() != null) {
+                relations.add(new DocumentEmployeeRelation(
+                        keeper.getValue(),
+                        DocumentEmployeeRole.KEEPER
+                ));
+            }
+
+            if (deputyDirector.getValue() != null) {
+                relations.add(new DocumentEmployeeRelation(
+                        deputyDirector.getValue(),
+                        DocumentEmployeeRole.DEPUTY_DIRECTOR
+                ));
+            }
+
+            if (chairman.getValue() != null) {
+                relations.add(new DocumentEmployeeRelation(
+                        chairman.getValue(),
+                        DocumentEmployeeRole.CHAIRMAN
+                ));
+            }
+
+            if (secretary.getValue() != null) {
+                relations.add(new DocumentEmployeeRelation(
+                        secretary.getValue(),
+                        DocumentEmployeeRole.SECRETARY
+                ));
+            }
+
+            if (acceptedBy.getValue() != null) {
+                relations.add(new DocumentEmployeeRelation(
+                        acceptedBy.getValue(),
+                        DocumentEmployeeRole.ACCEPTED_BY
+                ));
+            }
+
             DocumentRelationsRepository.saveAll(
                     currentDocument.getId(),
-                    employeesTable.getItems().stream()
-                            .filter(Employee::isSelected)
-                            .toList(),
+                    relations,
                     exhibitsTable.getItems().stream()
                             .filter(Exhibit::isSelected)
                             .toList()
             );
 
-            // --- специфичные поля ---
             DocumentTypeDetailsRepository.clearRelations(currentDocument.getId());
             switch (docTypeCombo.getValue()) {
 
@@ -587,25 +642,30 @@ public class UniversalDocumentFormController {
                     }
                 }
             }
+            formTitle.setText("Просмотр документа");
+            docTypeCombo.setDisable(true);
             conductedDateLabel.setText(DateTimeUtil.formatForDisplay(currentDocument.getConductedDate()));
             statusLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;");
             saveDraftBtn.setDisable(true);
             completeBtn.setDisable(true);
         } else {
+            formTitle.setText("Редактирование документа");
+            docTypeCombo.setDisable(true);
             conductedDateLabel.setText("не проведён");
         }
 
     }
 
-    private void toggleBlock(VBox block, boolean visible) {
-        block.setVisible(visible);
-        block.setManaged(visible);
+    private void toggleBlock(Node node, boolean visible) {
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 
     private void hideAllBlocks() {
-        for (VBox block : new VBox[]{efzkBlock, internalTransferBlock, loanBlock, ownerBlock, exhibitsBlock, staffBlock, basisBlock}) {
+        for (Node block : new Node[]{efzkBlock, internalTransferBlock, loanBlock, ownerBlock, exhibitsBlock, staffBlock, acceptedByRow, chairmanSecretaryRow, keeperDeputyRow}) {
             toggleBlock(block, false);
         }
+        toggleBlock(employeeTableBlock, true);
     }
 
     public static boolean canExhibitBeUsed(Exhibit exhibit, String docType) throws SQLException {
@@ -617,7 +677,6 @@ public class UniversalDocumentFormController {
         if (requiredStatus != null && !requiredStatus.equals(exhibitStatus)) {
             return false;
         }
-
         if (STRICT_CONDUCTED_CHECK_TYPES.contains(docType)) {
             boolean alreadyUsed = DocumentRepository.hasConductedDocumentForExhibit(
                     exhibit.getId(),
@@ -654,30 +713,58 @@ public class UniversalDocumentFormController {
     private void updateFormByType(String type) {
         hideAllBlocks();
         if (type == null) return;
-
         switch (type) {
+
             case "Протокол заседания ЭФЗК" -> {
                 toggleBlock(efzkBlock, true);
                 toggleBlock(exhibitsBlock, true);
                 toggleBlock(staffBlock, true);
+                toggleBlock(chairmanSecretaryRow, true);
                 filteredExhibit.setPredicate(p -> true);
             }
+
             case "Акт внутримузейной передачи" -> {
                 toggleBlock(internalTransferBlock, true);
                 toggleBlock(exhibitsBlock, true);
                 toggleBlock(staffBlock, true);
                 filteredExhibit.setPredicate(p -> true);
             }
+
             case "Акт ВП на временное хранение" -> {
                 toggleBlock(loanBlock, true);
                 toggleBlock(exhibitsBlock, true);
                 toggleBlock(staffBlock, true);
                 filteredExhibit.setPredicate(p -> true);
             }
+
+            case "Акт на рассмотрение ЭФЗК" -> {
+                toggleBlock(ownerBlock, true);
+                toggleBlock(exhibitsBlock, true);
+                toggleBlock(staffBlock, true);
+                toggleBlock(keeperDeputyRow, true);
+                toggleBlock(keeperBlock, true);
+                toggleBlock(deputyDirectorBlock, false);
+            }
+
+            case "Акт ПП на ПП", "Акт ПП на ОХ" -> {
+                toggleBlock(ownerBlock, true);
+                toggleBlock(exhibitsBlock, true);
+                toggleBlock(staffBlock, true);
+                toggleBlock(acceptedByRow, true);
+            }
+
+            case "Договор пожертвования" -> {
+                toggleBlock(ownerBlock, true);
+                toggleBlock(exhibitsBlock, true);
+                toggleBlock(staffBlock, true);
+                toggleBlock(keeperDeputyRow, true);
+                toggleBlock(deputyDirectorBlock, true);
+                toggleBlock(keeperBlock, false);
+                toggleBlock(employeeTableBlock, false);
+            }
             default -> {
                 toggleBlock(ownerBlock, true);
                 toggleBlock(exhibitsBlock, true);
-                toggleBlock(basisBlock, true);
                 toggleBlock(staffBlock, true);
             }
         }
@@ -693,6 +780,9 @@ public class UniversalDocumentFormController {
         loanRecipientAddress.clear(); loanPurpose.clear();
         efzkFundCombo.setValue(null); efzkCollectionCombo.setValue(null);
         transferFromEmployee.setValue(null); transferToEmployee.setValue(null);
+        keeper.setValue(null); deputyDirector.setValue(null);
+        chairman.setValue(null); secretary.setValue(null);
+        acceptedBy.setValue(null);
         loanRecipientType.setValue(null);
         efzkPeriodFrom.setValue(null); efzkPeriodTo.setValue(null);
 
@@ -704,6 +794,7 @@ public class UniversalDocumentFormController {
         service.clearAllErrorStyles(cancelBtn.getScene().getRoot());
 
         // Сброс лейблов
+        formTitle.setText("Создание документа");
         docNumberLabel.setText("— — —");
         docDateLabel.setText("— — —");
         conductedDateLabel.setText("не проведён");
@@ -716,15 +807,15 @@ public class UniversalDocumentFormController {
         boolean allFilled = true;
         String type = docTypeCombo.getValue();
 
-        boolean hasExhibits = exhibitsTable.getItems().stream()
-                .anyMatch(Exhibit::isSelected);
+        boolean hasExhibits = exhibitsTable.getItems().stream().anyMatch(Exhibit::isSelected);
 
         if (!hasExhibits) {service.markFieldAsError(exhibitsTable); allFilled = false;}
 
-        boolean hasEmployees = employeesTable.getItems().stream()
-                .anyMatch(Employee::isSelected);
+        boolean hasEmployees = employeesTable.getItems().stream().anyMatch(Employee::isSelected);
 
-        if (!hasEmployees) {service.markFieldAsError(employeesTable); allFilled = false;}
+        if (!type.equals("Договор пожертвования")){
+            if (!hasEmployees) {service.markFieldAsError(employeesTable); allFilled = false;}
+        }
 
         switch (type) {
             case "Протокол заседания ЭФЗК" -> {
@@ -732,6 +823,8 @@ public class UniversalDocumentFormController {
                 if (efzkPeriodTo.getValue() == null) {service.markFieldAsError(efzkPeriodTo); allFilled = false;}
                 if (efzkFundCombo.getValue() == null) {service.markFieldAsError(efzkFundCombo); allFilled = false;}
                 if (efzkCollectionCombo.getValue() == null) {service.markFieldAsError(efzkCollectionCombo); allFilled = false;}
+                if (chairman.getValue() == null) {service.markFieldAsError(chairman); allFilled = false;}
+                if (secretary.getValue() == null) {service.markFieldAsError(secretary); allFilled = false;}
             }
             case "Акт внутримузейной передачи" -> {
                 if (transferFromEmployee.getValue() == null) {service.markFieldAsError(transferFromEmployee); allFilled = false;}
@@ -744,6 +837,15 @@ public class UniversalDocumentFormController {
                 if (isBlank(loanRecipientIdentifier)) {service.markFieldAsError(loanRecipientIdentifier); allFilled = false;}
                 if (isBlank(loanRecipientAddress)) {service.markFieldAsError(loanRecipientAddress); allFilled = false;}
                 if (isBlank(loanPurpose)) {service.markFieldAsError(loanPurpose); allFilled = false;}
+            }
+            case "Акт на рассмотрение ЭФЗК" -> {
+                if (keeper.getValue() == null) {service.markFieldAsError(keeper); allFilled = false;}
+            }
+            case "Акт ПП на ПП", "Акт ПП на ОХ" -> {
+                if (acceptedBy.getValue() == null) {service.markFieldAsError(acceptedBy); allFilled = false;}
+            }
+            case "Договор пожертвования" -> {
+                if (deputyDirector.getValue() == null) {service.markFieldAsError(deputyDirector); allFilled = false;}
             }
         }
         return allFilled;

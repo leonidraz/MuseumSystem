@@ -3,10 +3,6 @@ package com.example.museumcatalog.Models;
 import javafx.beans.property.*;
 import java.time.LocalDate;
 
-/**
- * Модель владельца/вкладчика экспоната.
- * Использует JavaFX Properties для автоматического обновления UI.
- */
 public class Owner {
     private final IntegerProperty id = new SimpleIntegerProperty();
     private final StringProperty lastName = new SimpleStringProperty();
@@ -41,12 +37,10 @@ public class Owner {
         setNotice(notice);
     }
 
-    //ID
     public int getId() { return id.get(); }
     public void setId(int value) { id.set(value); }
     public IntegerProperty idProperty() { return id; }
 
-    //ФИО
     public String getLastName() { return lastName.get(); }
     public void setLastName(String value) { lastName.set(value); }
     public StringProperty lastNameProperty() { return lastName; }
@@ -59,7 +53,6 @@ public class Owner {
     public void setMiddleName(String value) { middleName.set(value); }
     public StringProperty middleNameProperty() { return middleName; }
 
-    //Паспорт
     public String getPassportSeries() { return passportSeries.get(); }
     public void setPassportSeries(String value) { passportSeries.set(value); }
     public StringProperty passportSeriesProperty() { return passportSeries; }
@@ -76,7 +69,6 @@ public class Owner {
     public void setDateOfIssue(LocalDate value) { dateOfIssue.set(value); }
     public ObjectProperty<LocalDate> dateOfIssueProperty() { return dateOfIssue; }
 
-    //Контакты
     public String getAddress() { return address.get(); }
     public void setAddress(String value) { address.set(value); }
     public StringProperty addressProperty() { return address; }
@@ -85,12 +77,10 @@ public class Owner {
     public void setPhone(String value) { phone.set(value); }
     public StringProperty phoneProperty() { return phone; }
 
-    //Дополнительно
     public String getNotice() { return notice.get(); }
     public void setNotice(String value) { notice.set(value); }
     public StringProperty noticeProperty() { return notice; }
 
-    //Системные флаги
     public boolean isSelected() { return selected.get(); }
     public void setSelected(boolean value) { selected.set(value); }
     public BooleanProperty selectedProperty() { return selected; }

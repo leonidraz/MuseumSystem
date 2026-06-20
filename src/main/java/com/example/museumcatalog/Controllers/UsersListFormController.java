@@ -34,6 +34,7 @@ public class UsersListFormController {
     @FXML private Button deleteUserBtn;
     @FXML private Button editUserBtn;
     @FXML private Button authLogsBtn;
+    @FXML private Button refreshBtn;
 
     // Элементы фильтрации/поиска
     @FXML private ComboBox<String> filterUserRole;
@@ -104,19 +105,13 @@ public class UsersListFormController {
     }
 
     private boolean checkUserFilters(User user) {
-
         String role = filterUserRole.getValue();
         String status = filterUserStatus.getValue();
 
-        if (role != null &&
-                !"Все роли".equals(role) &&
-                !role.equals(user.getRole())) {
+        if (role != null && !"Все роли".equals(role) && !role.equals(user.getRole())) {
             return false;
         }
-
-        if (status != null &&
-                !"Все статусы".equals(status) &&
-                !status.equals(user.getStatus())) {
+        if (status != null && !"Все статусы".equals(status) && !status.equals(user.getStatus())) {
             return false;
         }
 
@@ -124,15 +119,12 @@ public class UsersListFormController {
     }
 
     private boolean checkUserSearch(User user) {
-
         String q = search.getText();
         if (q == null || q.trim().isEmpty()) return true;
 
         String query = q.toLowerCase().trim();
 
-        String fullText =
-                safe(user.getLogin()) + " " +
-                        safe(user.getFullFio());
+        String fullText = safe(user.getLogin()) + " " + safe(user.getFullFio());
 
         return fullText.toLowerCase().contains(query);
     }
@@ -142,6 +134,16 @@ public class UsersListFormController {
     }
 
     private void setupButtonHandlers() {
+        refreshBtn.setOnAction(actionEvent -> {
+            search.clear();
+            filterUserRole.setValue("Все роли");
+            filterUserStatus.setValue("Все статусы");
+            usersTable.getSelectionModel().clearSelection();
+            usersTable.getSortOrder().clear();
+            applyFilters();
+            filteredUsers.setPredicate(User -> true);
+        });
+
         addUserBtn.setOnAction(actionEvent -> {
             try {
                 Service.openModal("UserRegistraionForm", "Добавление пользователя",
@@ -164,71 +166,49 @@ public class UsersListFormController {
                     throw new RuntimeException(e);
                 }
             } else {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите пользователя из таблицы для редактирования", "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите пользователя из таблицы для редактирования", "Предупреждение!");
             }
         });
         deleteUserBtn.setOnAction(actionEvent -> {
-
             User selected = usersTable.getSelectionModel().getSelectedItem();
 
             if (selected == null) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите пользователя из таблицы для удаления",
-                        "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите пользователя из таблицы для удаления", "Предупреждение!");
                 return;
             }
 
             boolean isSelf = selected.getId() == Service.getCurrentUser().getId();
 
             if (isSelf) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Нельзя удалить свою учетную запись",
-                        "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Нельзя удалить свою учетную запись", "Предупреждение!");
                 return;
             }
 
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                    "Удалить пользователя:\n" + selected.getLogin() + "?",
-                    ButtonType.YES, ButtonType.NO);
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Удалить пользователя:\n" + selected.getLogin() + "?", ButtonType.YES, ButtonType.NO);
 
             confirm.setTitle("Подтверждение удаления");
 
             if (confirm.showAndWait().orElse(ButtonType.NO) != ButtonType.YES) return;
 
             try {
-
                 boolean hasDocs = UserRepository.hasUserDocuments(selected.getId());
-
                 if (hasDocs) {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Невозможно удалить пользователя: он создавал документы",
-                            "Ошибка удаления");
+                    service.openAlert(Alert.AlertType.WARNING, "Невозможно удалить пользователя: он создавал документы", "Ошибка удаления");
                     return;
                 }
-
                 boolean deleted = UserRepository.deleteUser(selected.getId());
-
                 if (deleted) {
-
                     UserRepository.getUsers().remove(selected);
                     applyFilters();
                     updateUsersCount();
-
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            "Пользователь успешно удалён",
-                            "Успех");
+                    service.openAlert(Alert.AlertType.INFORMATION, "Пользователь успешно удалён", "Успех");
 
                 } else {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Пользователь не найден или уже удалён",
-                            "Ошибка");
+                    service.openAlert(Alert.AlertType.WARNING, "Пользователь не найден или уже удалён", "Ошибка");
                 }
 
             } catch (SQLException ex) {
-                service.openAlert(Alert.AlertType.ERROR,
-                        "Ошибка базы данных: " + ex.getMessage(),
-                        "Ошибка");
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка базы данных: " + ex.getMessage(), "Ошибка");
             }
         });
         authLogsBtn.setOnAction(actionEvent -> {

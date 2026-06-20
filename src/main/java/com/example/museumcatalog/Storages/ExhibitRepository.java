@@ -230,6 +230,21 @@ public class ExhibitRepository {
         return null;
     }
 
+    public static void returnToFund(int exhibitId) throws SQLException {
+
+        String sql = """
+        UPDATE exhibits
+        SET status_id = (
+                SELECT id FROM exhibit_statuses
+                WHERE status_name = 'В фонде'
+            ),
+            location = NULL
+        WHERE id = ?
+    """;
+
+        DBHandler.executeUpdate(sql, exhibitId);
+    }
+
     public static void updateStatus(int exhibitId, String statusName) throws SQLException {
         String sql = """
         UPDATE exhibits

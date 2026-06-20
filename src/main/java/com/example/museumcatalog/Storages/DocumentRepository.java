@@ -142,10 +142,8 @@ public class DocumentRepository {
                     doc.getConductedDate() != null ? doc.getConductedDate() : null,
                     doc.getOwnerId() != null ? doc.getOwnerId() : null,
                     doc.getDocStatus(),
-
                     us != null ? us.getId() : null,
                     us != null ? us.getId() : null,
-
                     null
             );
 
@@ -191,7 +189,6 @@ public class DocumentRepository {
     }
 
     public static boolean hasConductedDocumentForExhibit(int exhibitId, String docType) throws SQLException {
-
         String query = """
                     SELECT 1
                     FROM documents_exhibits de

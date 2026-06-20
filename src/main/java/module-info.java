@@ -7,6 +7,8 @@ module com.example.museumcatalog {
     requires jbcrypt;
     requires org.docx4j.core;
     requires jakarta.xml.bind;
+    requires org.apache.poi.poi;
+    requires org.apache.poi.ooxml;
 
 
     opens com.example.museumcatalog to javafx.fxml;

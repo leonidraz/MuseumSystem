@@ -18,11 +18,7 @@ public class User {
 
     public User() {}
 
-    public User(int id, String role, String status,
-                String employeeFio,
-                Integer employeeId,
-                String login, String password) {
-
+    public User(int id, String role, String status, String employeeFio, Integer employeeId, String login, String password) {
         setId(id);
         setRole(role);
         setStatus(status);

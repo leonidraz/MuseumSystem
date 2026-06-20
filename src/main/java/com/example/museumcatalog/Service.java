@@ -2,16 +2,21 @@ package com.example.museumcatalog;
 
 import com.example.museumcatalog.Controllers.BaseFormController;
 import com.example.museumcatalog.Models.*;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Control;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.transform.Scale;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -120,13 +125,19 @@ public class Service {
     }
 
     public void switchScene(String fileName, String nameForm) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("fxml/" + fileName + ".fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(
+                MainApplication.class.getResource("fxml/" + fileName + ".fxml")
+        );
         Stage stage = MainApplication.getCurrentStage();
-        stage.setScene(new Scene(fxmlLoader.load()));
+        Scene scene = new Scene(fxmlLoader.load());
+        MainApplication.applyScale(scene);
+        stage.setScene(scene);
         stage.setTitle(nameForm);
         if (!nameForm.equals("Авторизация")) {
+            MainApplication.setIsAuth(false);
             stage.setMaximized(true);
         } else {
+            MainApplication.setIsAuth(true);
             stage.setMaximized(false);
             stage.setWidth(466);
             stage.setHeight(539);
@@ -137,13 +148,62 @@ public class Service {
         FXMLLoader loader = new FXMLLoader(Service.class.getResource("fxml/" + fxmlPath + ".fxml"));
         Parent root = loader.load();
 
+        double targetWidth = root.prefWidth(-1);
+        double targetHeight = root.prefHeight(-1);
+
+        if (targetWidth <= 0 || targetHeight <= 0) {
+            root.applyCss();
+            root.layout();
+            targetWidth = root.getBoundsInParent().getWidth();
+            targetHeight = root.getBoundsInParent().getHeight();
+        }
+
+        Rectangle2D screen = Screen.getPrimary().getBounds();
+        double screenW = screen.getWidth();
+        double screenH = screen.getHeight();
+
+        double scale = 1.0;
+        if (screenW < targetWidth || screenH < targetHeight) {
+            scale = Math.min(screenW / targetWidth, screenH / targetHeight);
+            scale = Math.min(scale, 0.75);
+            scale = Math.max(scale, 0.75);
+        }
+        Parent rootForScene;
+        if (scale < 1.0) {
+            Group scaledRoot = new Group(root);
+            scaledRoot.getTransforms().add(new Scale(scale, scale));
+            rootForScene = scaledRoot;
+
+            root.setManaged(false);
+            root.resize(targetWidth, targetHeight);
+        } else {
+            rootForScene = root;
+        }
+
+        Scene scene = new Scene(rootForScene, targetWidth, targetHeight);
+        scene.setFill(null);
+
         Stage stage = new Stage();
         stage.initStyle(StageStyle.UNDECORATED);
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(ownerStage);
-        stage.setScene(new Scene(root));
-        stage.showAndWait();
+        stage.setTitle(title);
+        stage.setScene(scene);
 
+        double stageWidth = targetWidth * scale;
+        double stageHeight = targetHeight * scale;
+
+        stageWidth = Math.max(stageWidth, 800);
+        stageHeight = Math.max(stageHeight, 600);
+
+        stageWidth = Math.min(stageWidth, screenW * 0.95);
+        stageHeight = Math.min(stageHeight, screenH * 0.95);
+
+        stage.setWidth(stageWidth);
+        stage.setHeight(stageHeight);
+        stage.centerOnScreen();
+
+        stage.showAndWait();
         return loader.getController();
     }
 
@@ -188,6 +248,17 @@ public class Service {
             for (Node child : parent.getChildrenUnmodifiable()) {
                 clearAllErrorStyles(child);
             }
+        }
+    }
+
+    //Метод настроек прав доступа
+    public void setupAccessRights(Node... nodes) {
+        boolean isAdmin = Service.getCurrentUser() != null
+                && "Администратор".equals(Service.getCurrentUser().getRole());
+
+        for (Node node : nodes) {
+            node.setVisible(isAdmin);
+            node.setManaged(isAdmin);
         }
     }
 }

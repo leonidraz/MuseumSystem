@@ -12,14 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DocumentTypeDetailsRepository {
-
-
-    public static void saveEfzk(int documentId,
-                                LocalDate startDate,
-                                LocalDate endDate,
-                                String fundName,
-                                String collectionName) throws SQLException {
-
+    public static void saveEfzk(int documentId, LocalDate startDate, LocalDate endDate, String fundName, String collectionName) throws SQLException {
         String sql = """
             INSERT INTO protocol_efzk (
                 document_id,
@@ -72,11 +65,7 @@ public class DocumentTypeDetailsRepository {
 
 
 
-    public static void saveInternalTransfer(int documentId,
-                                            int fromEmployeeId,
-                                            int toEmployeeId,
-                                            String purpose) throws SQLException {
-
+    public static void saveInternalTransfer(int documentId, int fromEmployeeId, int toEmployeeId, String purpose) throws SQLException {
         String sql = """
             INSERT INTO internal_transfer_act (
                 document_id,
@@ -118,15 +107,7 @@ public class DocumentTypeDetailsRepository {
         return list;
     }
 
-
-
-    public static void saveTemporaryStorage(int documentId,
-                                            String receiverType,
-                                            String receiverName,
-                                            String receiverIdentifier,
-                                            String receiverAddress,
-                                            String purpose) throws SQLException {
-
+    public static void saveTemporaryStorage(int documentId, String receiverType, String receiverName, String receiverIdentifier, String receiverAddress, String purpose) throws SQLException {
         String sql = """
             INSERT INTO temporary_storage_act (
                 document_id,
@@ -185,7 +166,6 @@ public class DocumentTypeDetailsRepository {
     }
 
     public static EfzkData getLastEfzkForExhibit(int exhibitId) throws SQLException {
-
         String query = """
                 SELECT pe.*, f.fund_name, c.collection_name
                         FROM protocol_efzk pe
@@ -199,7 +179,6 @@ public class DocumentTypeDetailsRepository {
                         ORDER BY d.conducted_date DESC
                         LIMIT 1
         """;
-
         try (ResultSet rs = DBHandler.executeQuery(query, exhibitId)) {
             while (rs.next()) {
                 return new EfzkData(
@@ -210,7 +189,6 @@ public class DocumentTypeDetailsRepository {
                 );
             }
         }
-
         return null;
     }
 }

@@ -1,22 +1,17 @@
 package com.example.museumcatalog.Controllers;
 
-import com.example.museumcatalog.DBHandler;
 import com.example.museumcatalog.Models.Owner;
 import com.example.museumcatalog.Service;
-import com.example.museumcatalog.Storages.ExhibitRepository;
 import com.example.museumcatalog.Storages.OwnerRepository;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.format.DateTimeFormatter;
-import java.util.function.Predicate;
 
 public class OwnersListFormController {
 
@@ -90,7 +85,10 @@ public class OwnersListFormController {
                 OwnerRepository.getOwners(),
                 p -> true
         );
-        ownersTable.setItems(filteredOwners);
+        SortedList<Owner> sortedList = new SortedList<>(filteredOwners);
+
+        sortedList.comparatorProperty().bind(ownersTable.comparatorProperty());
+        ownersTable.setItems(sortedList);
         totalCountLabel.setText("Всего: " + filteredOwners.size());
     }
 
@@ -103,30 +101,21 @@ public class OwnersListFormController {
         addressSearch.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
 
         // Быстрый поиск (верхняя панель)
-        globalSearch.textProperty().addListener((obs, oldVal, newVal) -> applyGlobalSearch());
+        globalSearch.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
 
-    private void applyGlobalSearch() {
+    private void applyFilters() {
         filteredOwners.setPredicate(owner -> {
             String globalText = globalSearch.getText();
             if (globalText != null && !globalText.trim().isEmpty()) {
                 String q = normalize(globalText);
-                String fio = normalize(
-                        owner.getLastName() + " " +
-                                owner.getFirstName() + " " +
-                                owner.getMiddleName()
-                );
-                String passport = normalize(
-                        owner.getPassportSeries() + " " +
-                                owner.getPassportNumber()
-                );
+                String fio = normalize(owner.getLastName() + " " + owner.getFirstName() + " " + owner.getMiddleName());
+                String passport = normalize(owner.getPassportSeries() + " " + owner.getPassportNumber());
                 String phone = normalize(owner.getPhone());
                 String address = normalize(owner.getAddress());
                 String issuedBy = normalize(owner.getIssuedBy());
                 String notice = normalize(owner.getNotice());
-                String dateOfIssue = normalize(
-                        owner.getDateOfIssue() == null ? "" : owner.getDateOfIssue().toString()
-                );
+                String dateOfIssue = normalize(owner.getDateOfIssue() == null ? "" : owner.getDateOfIssue().toString());
                 boolean globalMatch =
                         fio.contains(q) ||
                                 passport.contains(q) ||
@@ -139,19 +128,12 @@ public class OwnersListFormController {
                     return false;
                 }
             }
-            return true;
-        });
-        totalCountLabel.setText("Всего: " + filteredOwners.size());
-    }
 
-    private void applyFilters() {
-        filteredOwners.setPredicate(owner -> {
             //Поиск по ФИО (фамилия / имя / отчество)
             String fioText = fioSearch.getText();
             if (fioText != null && !fioText.isEmpty()) {
                 String t = fioText.toLowerCase().trim().replaceAll("\\s+", " ");
-                String fio = (
-                        (owner.getLastName() == null ? "" : owner.getLastName()) + " " +
+                String fio = ((owner.getLastName() == null ? "" : owner.getLastName()) + " " +
                                 (owner.getFirstName() == null ? "" : owner.getFirstName()) + " " +
                                 (owner.getMiddleName() == null ? "" : owner.getMiddleName())
                 ).toLowerCase().replaceAll("\\s+", " ");
@@ -197,6 +179,18 @@ public class OwnersListFormController {
         totalCountLabel.setText("Всего: " + filteredOwners.size());
     }
     private void setupButtonHandlers() {
+        refreshBtn.setOnAction(actionEvent -> {
+            fioSearch.clear();
+            passportSeriesSearch.clear();
+            passportNumberSearch.clear();
+            phoneSearch.clear();
+            addressSearch.clear();
+            globalSearch.clear();
+            ownersTable.getSelectionModel().clearSelection();
+            ownersTable.getSortOrder().clear();
+            filteredOwners.setPredicate(doc -> true);
+        });
+
         addOwnerBtn.setOnAction(actionEvent -> {
             try {
                 Service.openModal("OwnerRegistrationForm", "Создание владельца",
@@ -218,25 +212,18 @@ public class OwnersListFormController {
                     throw new RuntimeException(e);
                 }
             } else {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите владельца из таблицы для редактирования", "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите владельца из таблицы для редактирования", "Предупреждение!");
             }
         });
 
         deleteOwnerBtn.setOnAction(actionEvent -> {
             Owner selected = ownersTable.getSelectionModel().getSelectedItem();
-
             if (selected == null) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите владельца из таблицы для удаления",
-                        "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите владельца из таблицы для удаления", "Предупреждение!");
                 return;
             }
 
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                    "Удалить владельца:\n" + selected.getFullFio() + "?",
-                    ButtonType.YES, ButtonType.NO);
-
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Удалить владельца:\n" + selected.getFullFio() + "?", ButtonType.YES, ButtonType.NO);
             confirm.setTitle("Подтверждение удаления");
 
             if (confirm.showAndWait().get() != ButtonType.YES) return;
@@ -247,25 +234,16 @@ public class OwnersListFormController {
                 if (deleted) {
                     OwnerRepository.getOwners().remove(selected);
                     totalCountLabel.setText("Всего: " + filteredOwners.size());
-
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            "Владелец успешно удалён",
-                            "Успех");
+                    service.openAlert(Alert.AlertType.INFORMATION, "Владелец успешно удалён", "Успех");
                 } else {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Владелец не найден или уже удалён",
-                            "Ошибка");
+                    service.openAlert(Alert.AlertType.WARNING, "Владелец не найден или уже удалён", "Ошибка");
                 }
 
             } catch (SQLException ex) {
                 if ("23503".equals(ex.getSQLState())) {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Невозможно удалить владельца: он связан с предметами или документами.",
-                            "Ошибка удаления");
+                    service.openAlert(Alert.AlertType.WARNING, "Невозможно удалить владельца: он связан с предметами или документами.", "Ошибка удаления");
                 } else {
-                    service.openAlert(Alert.AlertType.ERROR,
-                            "Ошибка базы данных: " + ex.getMessage(),
-                            "Ошибка");
+                    service.openAlert(Alert.AlertType.ERROR, "Ошибка базы данных: " + ex.getMessage(), "Ошибка");
                 }
             }
         });

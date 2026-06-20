@@ -11,8 +11,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="765.0" prefWidth="800.0" style="-fx-background-color: white; -fx-background-radius: 12px; -fx-border-color: #333333; -fx-border-width: 2px;" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.ReferenceBooksRegistrationController">
-    <!-- HEADER -->
+<BorderPane prefHeight="680.0" prefWidth="800.0" style="-fx-background-color: white; -fx-background-radius: 12px; -fx-border-color: #333333; -fx-border-width: 2px;" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.ReferenceBooksRegistrationController">
     <top>
         <VBox style="-fx-background-color: white;">
             <children>
@@ -26,19 +25,16 @@
         </VBox>
     </top>
 
-    <!-- CONTENT -->
     <center>
         <ScrollPane fitToWidth="true" style="-fx-background-color: white;">
             <content>
                 <VBox spacing="20.0" style="-fx-padding: 30px;">
 
-                    <!-- ВЫБОР ТИПА СПРАВОЧНИКА -->
                     <VBox spacing="10.0">
                         <Label style="-fx-font-size: 17px; -fx-font-weight: bold;" text="Тип справочника *" />
                         <ComboBox fx:id="referenceTypeCombo" promptText="Выберите тип справочника" styleClass="input-combo" />
                     </VBox>
 
-                    <!-- ФОРМА ДЛЯ ФОНДА -->
                     <VBox fx:id="fundForm" spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                         <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Данные фонда" />
 
@@ -60,7 +56,6 @@
                          </VBox>
                     </VBox>
 
-                    <!-- ФОРМА ДЛЯ КОЛЛЕКЦИИ -->
                     <VBox fx:id="collectionForm" spacing="18.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 20px 25px;">
                         <Label style="-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Данные коллекции" />
                         <VBox spacing="15.0">
@@ -93,13 +88,11 @@
                      </VBox>
                   </children>
                </VBox>
-
                 </VBox>
             </content>
         </ScrollPane>
     </center>
 
-    <!-- BUTTONS -->
     <bottom>
         <HBox alignment="CENTER_RIGHT" spacing="25.0" style="-fx-background-color: white; -fx-padding: 16px 40px;">
             <children>

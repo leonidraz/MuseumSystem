@@ -17,8 +17,7 @@ public class Employee {
 
     public Employee() {}
 
-    public Employee(int id, String lastName, String firstName, String middleName,
-                    String position, String email, String phone, String status) {
+    public Employee(int id, String lastName, String firstName, String middleName, String position, String email, String phone, String status) {
         this.id.set(id);
         this.lastName.set(lastName);
         this.firstName.set(firstName);

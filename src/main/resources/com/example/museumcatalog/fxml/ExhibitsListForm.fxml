@@ -27,13 +27,11 @@
 <?import javafx.scene.shape.Rectangle?>
 
 <BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="868.0" prefWidth="1920.0" styleClass="app-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.ExhibitsListFormController">
-
     <left>
         <VBox prefHeight="954.0" prefWidth="350.0" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
             <children>
                 <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="15.0" prefWidth="109.0" styleClass="subtitle" text="Фильтры" />
 
-                <!-- Фильтры -->
                 <VBox spacing="15.0">
                     <children>
                         <VBox prefHeight="24.0" prefWidth="300.0" spacing="10.0">
@@ -76,11 +74,10 @@
             <VBox spacing="10.0">
                <children>
                   <Label styleClass="field-label" text="Владелец" />
-                  <TextField fx:id="ownerSearch" prefWidth="300.0" promptText="ФИО владельца" styleClass="input-field" />
+                  <TextField fx:id="ownerSearch" prefWidth="300.0" promptText="ФИО или паспорт" styleClass="input-field" />
                </children>
             </VBox>
 
-                <!-- Действия -->
                 <VBox spacing="15.0">
                     <children>
                         <Label styleClass="section-title" text="Действия" />
@@ -94,6 +91,24 @@
                         <String fx:value="btn-add" />
                      </styleClass>
                         </Button>
+                  <Button fx:id="historyBtn" mnemonicParsing="false" prefHeight="55.0" text="История движения">
+                     <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                     </effect>
+                     <styleClass>
+                        <String fx:value="btn-panel-details" />
+                        <String fx:value="btn-archive" />
+                     </styleClass>
+                  </Button>
+                  <Button fx:id="exportBtn" mnemonicParsing="false" prefHeight="55.0" text="Экспорт">
+                     <effect>
+                        <DropShadow color="rgba(0,0,0,0.2)" radius="4" />
+                     </effect>
+                     <styleClass>
+                        <String fx:value="btn-panel-details" />
+                        <String fx:value="btn-archive" />
+                     </styleClass>
+                  </Button>
                     </children>
                 </VBox>
             </children>
@@ -106,7 +121,6 @@
     <center>
         <VBox fx:id="centerVBox" spacing="20.0" styleClass="panel" BorderPane.alignment="CENTER">
             <children>
-                <!-- Заголовок + поиск -->
                 <HBox alignment="TOP_CENTER" spacing="20.0">
                     <children>
                         <Label prefHeight="0.0" prefWidth="262.0" styleClass="title" text="Список предметов" />
@@ -118,7 +132,6 @@
                     </children>
                 </HBox>
 
-                <!-- Панель управления таблицей -->
                 <HBox alignment="CENTER_LEFT" spacing="15.0">
                     <children>
                         <Button fx:id="refreshBtn" mnemonicParsing="false" prefHeight="42.0" styleClass="btn-light" text="Обновить" />
@@ -126,7 +139,6 @@
                     </children>
                 </HBox>
 
-                <!-- Таблица экспонатов -->
                 <TableView fx:id="exhibitsTable" prefHeight="680.0" styleClass="table">
                     <columns>
                         <TableColumn fx:id="nameColumn" text="Название" />
@@ -186,10 +198,8 @@
                             </children>
                         </HBox>
 
-                        <!-- Карточка экспоната -->
                         <VBox styleClass="card">
                             <children>
-                                <!-- Заголовок: фото + данные -->
                                 <HBox spacing="15.0" style="-fx-padding: 15px;">
                                     <children>
                               <ImageView fx:id="imageView" fitHeight="104.0" fitWidth="116.0" pickOnBounds="true" preserveRatio="true" styleClass="photo-placeholder">
@@ -216,9 +226,7 @@
 
                                 <Separator styleClass="separator" />
 
-                                <!-- Вкладки -->
                                 <TabPane prefHeight="526.0" styleClass="tab-pane">
-                                    <!-- Вкладка 1: Основное -->
                                     <Tab closable="false" text="Основное">
                                         <VBox spacing="14.0" style="-fx-padding: 18px;" styleClass="tab-vbox-pane">
                                             <children>
@@ -261,7 +269,6 @@
                                         </VBox>
                                     </Tab>
 
-                                    <!-- Вкладка 2: Характеристики -->
                                     <Tab closable="false" text="Характеристики">
                                         <VBox spacing="14.0" style="-fx-padding: 18px;" styleClass="tab-vbox-pane">
                                             <children>
@@ -302,7 +309,6 @@
                                         </VBox>
                                     </Tab>
 
-                                    <!-- Вкладка 3: Дополнительно -->
                                     <Tab closable="false" text="Дополнительно">
                                         <ScrollPane fitToWidth="true">
                                             <content>
@@ -371,8 +377,7 @@
 
                                 <Separator styleClass="separator" />
 
-                                <!-- Кнопки действий (2 колонки) -->
-                                <GridPane hgap="10.0" style="-fx-padding: 12px;" vgap="10.0">
+                                <GridPane hgap="10.0" style="-fx-padding: 12px;" vgap="5.0">
                                     <columnConstraints>
                                         <ColumnConstraints hgrow="ALWAYS" />
                                         <ColumnConstraints hgrow="ALWAYS" />
@@ -380,24 +385,26 @@
                                     <rowConstraints>
                                         <RowConstraints vgrow="ALWAYS" />
                                         <RowConstraints vgrow="ALWAYS" />
+                              <RowConstraints vgrow="ALWAYS" />
+                              <RowConstraints vgrow="ALWAYS" />
                                     </rowConstraints>
                                     <children>
+                                        <Button fx:id="returnToFundBtn" mnemonicParsing="false" text="Вернуть в фонд" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                 <styleClass>
+                                    <String fx:value="btn-panel-details" />
+                                    <String fx:value="btn-archive" />
+                                 </styleClass></Button>
                                         <Button fx:id="editBtn" mnemonicParsing="false" text="Редактировать" GridPane.columnIndex="0" GridPane.rowIndex="0">
                                  <styleClass>
                                     <String fx:value="btn-panel-details" />
                                     <String fx:value="btn-edit" />
                                  </styleClass></Button>
-                                        <Button mnemonicParsing="false" text="Документы" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                        <Button fx:id="archiveBtn" mnemonicParsing="false" text="Архивировать" GridPane.rowIndex="2">
                                  <styleClass>
                                     <String fx:value="btn-panel-details" />
-                                    <String fx:value="btn-documents" />
+                                    <String fx:value="btn-fund" />
                                  </styleClass></Button>
-                                        <Button fx:id="archiveBtn" mnemonicParsing="false" text="Архивировать" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                 <styleClass>
-                                    <String fx:value="btn-panel-details" />
-                                    <String fx:value="btn-archive" />
-                                 </styleClass></Button>
-                                        <Button fx:id="deleteBtn" mnemonicParsing="false" text="Удалить" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                        <Button fx:id="deleteBtn" mnemonicParsing="false" text="Удалить" GridPane.columnIndex="1">
                                  <styleClass>
                                     <String fx:value="btn-panel-details" />
                                     <String fx:value="btn-delete" />

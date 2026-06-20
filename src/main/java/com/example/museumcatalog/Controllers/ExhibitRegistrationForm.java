@@ -22,10 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class ExhibitRegistrationForm {
 
@@ -66,13 +63,13 @@ public class ExhibitRegistrationForm {
     @FXML private Button choosePhotoBtn;
     @FXML private Button resetPhotoBtn;
 
-    private File selectedPhoto; // Выбранный файл изображения
+    private File selectedPhoto; //Выбранный файл изображения
 
     //Кнопки
     @FXML private Button saveBtn;
     @FXML private Button cancelBtn;
 
-    @FXML private Label title; // Заголовок (добавление/редактирование)
+    @FXML private Label title; //Заголовок (добавление/редактирование)
 
     //Выбор владельца
     @FXML private TextField ownerSearchField;
@@ -81,23 +78,22 @@ public class ExhibitRegistrationForm {
     @FXML private TableColumn<Owner, String> passportOwnerColumn;
     @FXML private TableColumn<Owner, String> phoneOwnerColumn;
 
-    // Карточки состояния выбора владельца
+    //Карточки состояния выбора владельца
     @FXML private VBox ownerNotSelected;
     @FXML private VBox ownerSelected;
 
-    // Данные выбранного владельца
+    //Данные выбранного владельца
     @FXML private Label selectedOwnerFio;
     @FXML private Label selectedOwnerPassport;
     @FXML private Label selectedOwnerPhone;
 
-    private Integer selectedOwnerId = null; // ID выбранного владельца
+    private Integer selectedOwnerId = null; //ID выбранного владельца
 
     public Exhibit getResultController() {
         return resultController;
     }
 
     private Exhibit resultController;
-
 
     Service service = new Service();
     private FilteredList<Owner> filteredOwners;
@@ -157,29 +153,27 @@ public class ExhibitRegistrationForm {
         resetPhotoBtn.setOnAction(e -> {
             selectedPhoto = new File("src/main/resources/com/example/museumcatalog/images/picture.png");
             System.out.println(selectedPhoto);
-            imageView.setImage(new Image(Objects.requireNonNull(
-                    getClass().getResource("/com/example/" +
-                            "museumcatalog/images/picture.png")).toExternalForm()));
+            imageView.setImage(new Image(Objects.requireNonNull(getClass().getResource("/com/example/" + "museumcatalog/images/picture.png")).toExternalForm()));
         });
         saveBtn.setOnAction(actionEvent -> {
             if (!validateRequiredFields()) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Не все обязательные поля заполнены. Поля, подсвеченные красным, необходимо заполнить.",
-                        "Проверка обязательных полей");
+                service.openAlert(Alert.AlertType.WARNING, "Не все обязательные поля заполнены. Поля, подсвеченные красным, необходимо заполнить.", "Проверка обязательных полей");
                 return;
             }
+            List<String> errors = new ArrayList<>();
 
-            Double lengthValue = validateDoubleField(length, "Длина");
-            Double widthValue = validateDoubleField(width, "Ширина");
-            Double heightValue = validateDoubleField(height, "Высота");
-
-            if (lengthValue == null || widthValue == null || heightValue == null) {
-                return;
-            }
+            Double lengthValue = validateDoubleField(length, "Длина", errors);
+            Double widthValue = validateDoubleField(width, "Ширина", errors);
+            Double heightValue = validateDoubleField(height, "Высота", errors);
 
             Double weightValue = null;
-            if (!weight.getText().isEmpty()) {
-                weightValue = validateDoubleField(weight, "Вес");
+            if (!weight.getText().isBlank()) {
+                weightValue = validateDoubleField(weight, "Вес", errors);
+            }
+
+            if (!errors.isEmpty()) {
+                service.openAlert(Alert.AlertType.ERROR, String.join("\n", errors), "Обнаружены ошибки");
+                return;
             }
 
             Exhibit exhibit = Service.getExhibit();
@@ -188,6 +182,7 @@ public class ExhibitRegistrationForm {
 
             if (!isUpdate) {
                 exhibit = new Exhibit();
+                Service.setExhibit(exhibit);
             }
 
             exhibit.setName(name.getText());
@@ -237,50 +232,38 @@ public class ExhibitRegistrationForm {
 
             try {
                 int result = ExhibitRepository.addOrEdit(exhibit);
-
                 if (result > 0) {
                     try {
                         if (selectedPhoto != null && !selectedPhoto.getName().toLowerCase().contains("picture.png")) {
                             Path path = Path.of("images", photoName);
                             Files.copy(selectedPhoto.toPath(), path);
                         }
-
-                        if (selectedPhoto != null && oldPhotoName != null && !oldPhotoName.isEmpty()
-                                && !oldPhotoName.equals("picture.png") && !oldPhotoName.equals(photoName)) {
+                        if (selectedPhoto != null && oldPhotoName != null && !oldPhotoName.isEmpty() && !oldPhotoName.equals("picture.png") && !oldPhotoName.equals(photoName)) {
                             Files.deleteIfExists(Path.of("images", oldPhotoName));
                         }
                     } catch (IOException ioEx) {
-                        service.openAlert(Alert.AlertType.WARNING,
-                                "Файл не удалось сохранить",
-                                "Предмет сохранён, но возникла ошибка при работе с изображением");
+                        service.openAlert(Alert.AlertType.WARNING, "Файл не удалось сохранить", "Предмет сохранён, но возникла ошибка при работе с изображением");
                         ioEx.printStackTrace();
                     }
-
                     if (!isUpdate) {
                         exhibit.setId(result);
                         ExhibitRepository.getExhibits().add(exhibit);
                     }
 
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            isUpdate ? "Предмет изменен!" : "Предмет добавлен!",
-                            "Успешно!");
+                    service.openAlert(Alert.AlertType.INFORMATION, isUpdate ? "Предмет изменен!" : "Предмет добавлен!", "Успешно!");
+                    title.setText("Редактирование предмета");
 
                     selectedPhoto = null;
                     this.resultController = exhibit;
                 } else {
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            "Ошибка при сохранении предмета",
-                            "Неуспешно!");
+                    service.openAlert(Alert.AlertType.INFORMATION, "Ошибка при сохранении предмета", "Неуспешно!");
                 }
-
             } catch (SQLException e) {
-                service.openAlert(Alert.AlertType.ERROR,
-                        "Ошибка базы данных: " + e.getMessage(), "Ошибка!");
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка базы данных: " + e.getMessage(), "Ошибка!");
                 e.printStackTrace();
             }
         });
     }
-
     private void updateKPAndLocationVisibility(Exhibit ex) {
         boolean hasKP = ex.getNumberKP() != null && !ex.getNumberKP().isBlank();
         hideLocationBlock(hasKP);
@@ -360,7 +343,9 @@ public class ExhibitRegistrationForm {
         weight.setText(ex.getWeight() != null ? String.valueOf(ex.getWeight()) : "");
         condition.setValue(ex.getCondition());
         unitSizes.setValue(ex.getUnitSizes());
-        unitWeight.setValue(ex.getUnitWeight());
+        if (ex.getUnitWeight() != null) {
+            unitWeight.setValue(ex.getUnitWeight());
+        }
         arrivalDate.setValue(ex.getArrivalDate());
         storageLocation.setText(ex.getLocation());
         conditionDetails.setText(ex.getConditionDetails());
@@ -392,20 +377,20 @@ public class ExhibitRegistrationForm {
     }
     // Валидирует числовое поле: проверяет, что введено число и оно не отрицательное
     // В случае ошибки показывает alert и возвращает null
-    private Double validateDoubleField(TextField field, String fieldName) {
+    private Double validateDoubleField(TextField field, String fieldName, List<String> errors) {
         try {
             double value = Double.parseDouble(field.getText());
             if (value < 0) {
-                service.openAlert(Alert.AlertType.ERROR,
-                        "Поле '" + fieldName + "' не может быть отрицательным",
-                        "Ошибка!");
+                service.markFieldAsError(field);
+                errors.add("Поле \"" + fieldName + "\" не может быть отрицательным");
                 return null;
             }
+            service.clearAllErrorStyles(field);
             return value;
+
         } catch (NumberFormatException e) {
-            service.openAlert(Alert.AlertType.ERROR,
-                    "Поле '" + fieldName + "' должно быть числом",
-                    "Ошибка!");
+            service.markFieldAsError(field);
+            errors.add("Поле \"" + fieldName + "\" должно быть числом");
             return null;
         }
     }

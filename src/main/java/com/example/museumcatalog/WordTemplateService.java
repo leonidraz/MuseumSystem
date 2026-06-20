@@ -2,22 +2,20 @@ package com.example.museumcatalog;
 
 import com.example.museumcatalog.Models.*;
 import com.example.museumcatalog.Models.Document;
+import com.example.museumcatalog.Storages.EmployeeRepository;
+import com.example.museumcatalog.Storages.OwnerRepository;
 import org.docx4j.Docx4J;
 import org.docx4j.model.datastorage.migration.VariablePrepare;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.*;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class WordTemplateService {
-
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-    // ================= EXPORT =================
-
     public static void export(FullDocumentData data, Path savePath) throws Exception {
         WordprocessingMLPackage pkg = loadTemplate(data);
         VariablePrepare.prepare(pkg);
@@ -29,8 +27,6 @@ public class WordTemplateService {
 
         Docx4J.save(pkg, savePath.toFile());
     }
-
-    // ================= LOAD TEMPLATE =================
 
     private static WordprocessingMLPackage loadTemplate(FullDocumentData data) throws Exception {
         String template = resolveTemplate(data.getDocument().getDocType());
@@ -57,24 +53,17 @@ public class WordTemplateService {
         };
     }
 
-    // ================= VALUES =================
-
     private static Map<String, String> buildValues(FullDocumentData data) {
         Map<String, String> map = new HashMap<>();
         Document d = data.getDocument();
 
-        // Общие переменные
         map.put("docNumber", safe(d.getDocNumber()));
-        map.put("conductedDate", d.getConductedDate() != null ? d.getConductedDate().format(DATE_FORMAT) : "");
+        map.put("conductedDate", DateTimeUtil.formatDocumentDate(d.getConductedDate()));
         map.put("exhibitsCount", String.valueOf(data.getExhibits().size()));
 
-        // Владелец (полная строка)
-        map.put("owner", d.getOwner());
+        map.put("employees", formatEmployeesDefault(data.getEmployees()));
+        map.put("owner", formatOwnerFioOnly(data.getOwner()));
 
-        // Сотрудники (список ФИО и должностей)
-        map.put("employees", formatEmployees(data.getEmployees()));
-
-        // Специфичные переменные по типу документа
         buildValuesForType(map, data);
 
         return map;
@@ -84,6 +73,17 @@ public class WordTemplateService {
         String type = data.getDocument().getDocType();
 
         switch (type) {
+            case "Акт ПП на ВХ":
+                map.put("employees", formatEmployeesDefault(data.getEmployees()));
+                map.put("owner", formatOwnerFull(data.getOwner()));
+                break;
+            case "Акт на рассмотрение ЭФЗК":
+                Employee keeper = findEmployeeByRole(data.getEmployees(), DocumentEmployeeRole.KEEPER);
+                map.put("keeper", keeper != null ? formatEmployeeFioOnly(keeper) : "");
+                map.put("owner", formatOwnerFioOnly(data.getOwner()));
+                map.put("acceptedBy", keeper != null ? formatEmployeeShort(keeper) : "");
+                map.put("presentedBy", formatEmployeesParticipant(data.getEmployees()));
+                break;
             case "Протокол заседания ЭФЗК":
                 EfzkData protocol = data.getEfzkData();
                 if (protocol != null) {
@@ -91,76 +91,148 @@ public class WordTemplateService {
                     map.put("fund", safe(protocol.getFundName()));
                     map.put("collection", safe(protocol.getCollectionName()));
                 }
+                Employee chairman = findEmployeeByRole(data.getEmployees(), DocumentEmployeeRole.CHAIRMAN);
+                map.put("chairman", chairman != null ? formatEmployeeShort(chairman) : "");
+                Employee secretary = findEmployeeByRole(data.getEmployees(), DocumentEmployeeRole.SECRETARY);
+                map.put("secretary", secretary != null ? formatEmployeeShort(secretary) : "");
+                map.put("employees", formatEmployeesAll(data.getEmployees()));
+                map.put("chairmanSignature", chairman != null ? formatEmployeeSignatureLine(chairman) : "");
+                map.put("secretarySignature", secretary != null ? formatEmployeeSignatureLine(secretary) : "");
+                List<String> membersSignatures = new ArrayList<>();
+                for (DocumentEmployeeRelation rel : data.getEmployees()) {
+                    if (rel.getRole() == DocumentEmployeeRole.PARTICIPANT) {
+                        Employee emp = rel.getEmployee();
+                        membersSignatures.add(formatEmployeeSignatureLine(emp));
+                    }
+                }
+                map.put("membersSignatures", String.join("\n", membersSignatures));
+                map.put("employees", formatEmployeesAll(data.getEmployees()));
                 break;
-
+            case "Акт ПП на ПП":
+                map.put("employees", formatEmployeesParticipant(data.getEmployees()));
+                map.put("owner", formatOwnerFull(data.getOwner()));
+                break;
+            case "Договор пожертвования":
+                map.put("ownerFio", formatOwnerFioOnly(data.getOwner()));
+                map.put("ownerPassport", formatOwnerPassportOnly(data.getOwner()));
+                Employee deputy = findEmployeeByRole(data.getEmployees(), DocumentEmployeeRole.DEPUTY_DIRECTOR);
+                map.put("museumHead", deputy != null ? formatEmployeeFioOnly(deputy) : "");
+                map.put("exhibitList", buildExhibitsListWithDesc(data.getExhibits()));
+                map.put("ownerWithAddress", formatOwnerWithAddress(data.getOwner()));
+                break;
+            case "Акт ПП на ОХ":
+                map.put("owner", formatOwnerFull(data.getOwner()));
+                Employee acceptedBy = findEmployeeByRole(data.getEmployees(), DocumentEmployeeRole.ACCEPTED_BY);
+                map.put("ownerOnlyFio", formatOwnerFioOnly(data.getOwner()));
+                map.put("acceptedBy", acceptedBy != null ? formatEmployeeShort(acceptedBy) : "");
+                map.put("presentedBy", formatEmployeesParticipant(data.getEmployees()));
+                break;
             case "Акт внутримузейной передачи":
                 InternalTransferData transfer = data.getInternalTransferData();
                 if (transfer != null) {
-                    map.put("fromEmployee", safe(String.valueOf(transfer.getFromEmployeeId())));
-                    map.put("toEmployee", safe(String.valueOf(transfer.getFromEmployeeId())));
+                    map.put("fromEmployee", buildEmployeeFio(transfer.getFromEmployeeId()));
+                    map.put("toEmployee", buildEmployeeFio(transfer.getToEmployeeId()));
                     map.put("transferPurpose", safe(transfer.getTransferPurpose()));
+                    map.put("presentedBy", formatEmployeesParticipant(data.getEmployees()));
                 }
                 break;
-
             case "Акт ВП на временное хранение":
                 TemporaryStorageData issuance = data.getTemporaryStorageData();
                 if (issuance != null) {
-                    map.put("recipientType", safe(issuance.getReceiverType()));
                     map.put("recipientName", safe(issuance.getReceiverName()));
                     map.put("recipientIdentifier", safe(issuance.getReceiverIdentifier()));
                     map.put("recipientAddress", safe(issuance.getReceiverAddress()));
                     map.put("admissionPurpose", safe(issuance.getAdmissionPurpose()));
+                    map.put("presentedBy", formatEmployeesParticipant(data.getEmployees()));
                 }
-                break;
-
-            case "Договор пожертвования":
-                // Список предметов через запятую
-                map.put("exhibitsList", buildExhibitsList(data.getExhibits()));
                 break;
         }
     }
-
-    // ================= TABLE FILLING =================
-
     private static void fillTableForType(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
         String type = data.getDocument().getDocType();
-
         switch (type) {
             case "Акт ПП на ВХ":
+                fillTemporaryStorageTable(pkg, data);
+                break;
             case "Акт на рассмотрение ЭФЗК":
-                fillStandardTable(pkg, data); // №, Наименование, Сохранность, Материал/Техника/Размер
+                fillEfzkConsiderationTable(pkg, data);
                 break;
-
             case "Протокол заседания ЭФЗК":
-                fillEfzkProtocolTable(pkg, data); // №, Наименование, Описание, Сохранность, Цель
+                fillEfzkProtocolTable(pkg, data);
                 break;
-
             case "Акт ПП на ПП":
-                fillPermanentAcceptanceTable(pkg, data); // №, Наименование, КП, Мат/Тех/Размер, Надписи, Сохранность, Учёт
+                fillPermanentAcceptanceTable(pkg, data);
                 break;
-
             case "Акт ПП на ОХ":
-                fillResponsibleStorageTable(pkg, data); // №, Учёт, Наименование, Цель
+                fillResponsibleStorageTable(pkg, data);
                 break;
-
             case "Акт внутримузейной передачи":
-                fillInternalTransferTable(pkg, data); // №, Учёт, Наименование
+                fillInternalTransferTable(pkg, data);
                 break;
-
             case "Акт ВП на временное хранение":
-                fillIssuanceTable(pkg, data); // №, Наименование/Мат/Размер, Учёт, Сохранность, Кол-во
+                fillIssuanceTable(pkg, data);
                 break;
-
             case "Договор пожертвования":
-                // Таблица не заполняется, используется переменная ${exhibitsList}
+                // Таблица не заполняется
                 break;
-
             default:
                 fillStandardTable(pkg, data);
         }
     }
 
-    // --- Стандартная таблица (Акт ПП на ВХ, Акт на рассмотрение ЭФЗК) ---
+    private static void fillTemporaryStorageTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
+        fillTable(pkg, data, (row, idx, ex) -> {
+            setCell(row, 0, String.valueOf(idx));
+            setCell(row, 1, buildNameWithDesc(ex));
+            setCell(row, 2, safe(ex.getCondition()));
+            setCell(row, 3, buildMaterialInfo(ex));
+        });
+    }
+    private static void fillEfzkConsiderationTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
+        fillTable(pkg, data, (row, idx, ex) -> {
+            setCell(row, 0, String.valueOf(idx));
+            setCell(row, 1, safe(ex.getName()));
+            setCell(row, 2, safe(ex.getCondition()));
+            setCell(row, 3, buildMaterialTechnique(ex));
+        });
+    }
+    private static void fillEfzkProtocolTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
+        fillTable(pkg, data, (row, idx, ex) -> {
+            setCell(row, 0, String.valueOf(idx));
+            setCell(row, 1, safe(ex.getName()));
+            setCell(row, 2, safe(ex.getCondition()));
+            setCell(row, 3, safe(ex.getMuseumValue()));
+            setCell(row, 4, buildOwnerWithAddress(ex));
+        });
+    }
+    private static void fillPermanentAcceptanceTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
+        fillTable(pkg, data, (row, idx, ex) -> {
+            setCell(row, 0, String.valueOf(idx));
+            setCell(row, 1, buildFullDescription(ex));
+            setCell(row, 2, safe(ex.getCondition()));
+            setCell(row, 3, safe(ex.getNumberKP()));
+        });
+    }
+    private static void fillResponsibleStorageTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
+        fillTable(pkg, data, (row, idx, ex) -> {
+            setCell(row, 0, safe(ex.getNumberKP()));
+            setCell(row, 1, safe(ex.getName()));
+        });
+    }
+    private static void fillInternalTransferTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
+        fillTable(pkg, data, (row, idx, ex) -> {
+            setCell(row, 0, safe(ex.getNumberKP()));
+            setCell(row, 1, safe(ex.getName()));
+        });
+    }
+    private static void fillIssuanceTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
+        fillTable(pkg, data, (row, idx, ex) -> {
+            setCell(row, 0, String.valueOf(idx));
+            setCell(row, 1, buildNameWithMaterialAndSize(ex));
+            setCell(row, 2, safe(ex.getNumberKP()));
+            setCell(row, 3, safe(ex.getCondition()));
+        });
+    }
     private static void fillStandardTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
         fillTable(pkg, data, (row, idx, ex) -> {
             setCell(row, 0, String.valueOf(idx));
@@ -170,59 +242,6 @@ public class WordTemplateService {
         });
     }
 
-    // --- Протокол ЭФЗК ---
-    private static void fillEfzkProtocolTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
-        fillTable(pkg, data, (row, idx, ex) -> {
-            setCell(row, 0, String.valueOf(idx));
-            setCell(row, 1, buildNameWithDesc(ex));
-            setCell(row, 2, safe(ex.getCondition()));
-            setCell(row, 3, safe(ex.getMuseumValue()));
-            setCell(row, 4, safe(ex.getOwnerFio()));
-        });
-    }
-
-    // --- Акт ПП на ПП ---
-    private static void fillPermanentAcceptanceTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
-        fillTable(pkg, data, (row, idx, ex) -> {
-            setCell(row, 0, String.valueOf(idx));
-            setCell(row, 1, buildNameWithDesc(ex));
-            setCell(row, 2, safe(ex.getNumberKP()));
-            setCell(row, 3, buildMaterialInfo(ex));
-            setCell(row, 4, safe(ex.getInscriptions())); // Надписи, клейма
-            setCell(row, 5, safe(ex.getCondition()));
-            setCell(row, 6, safe(ex.getNumberKP())); // Учётное обозначение
-        });
-    }
-
-    // --- Акт ПП на ОХ ---
-    private static void fillResponsibleStorageTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
-        fillTable(pkg, data, (row, idx, ex) -> {
-            setCell(row, 0, safe(ex.getNumberKP()));
-            setCell(row, 1, buildNameWithDesc(ex));
-        });
-    }
-
-    // --- Акт внутримузейной передачи ---
-    private static void fillInternalTransferTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
-        fillTable(pkg, data, (row, idx, ex) -> {
-            setCell(row, 0, String.valueOf(idx));
-            setCell(row, 1, safe(ex.getNumberKP()));
-            setCell(row, 2, buildNameWithDesc(ex));
-        });
-    }
-
-    // --- Акт ВП на временное хранение ---
-    private static void fillIssuanceTable(WordprocessingMLPackage pkg, FullDocumentData data) throws Exception {
-        fillTable(pkg, data, (row, idx, ex) -> {
-            setCell(row, 0, String.valueOf(idx));
-            setCell(row, 1, buildNameWithMaterialAndSize(ex));
-            setCell(row, 2, safe(ex.getNumberKP()));
-            setCell(row, 3, safe(ex.getCondition()));
-            setCell(row, 4, "1"); // Количество
-        });
-    }
-
-    // --- Универсальный метод заполнения таблицы ---
     @FunctionalInterface
     private interface RowFiller {
         void fill(Tr row, int index, Exhibit ex);
@@ -239,7 +258,6 @@ public class WordTemplateService {
             List<Object> rows = table.getContent();
             if (rows.size() < 2) continue;
 
-            // Поиск строки-шаблона
             Tr templateRow = null;
             for (int i = 1; i < rows.size(); i++) {
                 Object r = rows.get(i);
@@ -251,10 +269,8 @@ public class WordTemplateService {
             }
             if (templateRow == null) continue;
 
-            // Удаление старых данных
             while (rows.size() > 1) rows.remove(1);
 
-            // Добавление новых строк
             int counter = 1;
             for (Exhibit ex : data.getExhibits()) {
                 Tr newRow = (Tr) org.docx4j.XmlUtils.deepCopy(templateRow);
@@ -264,7 +280,144 @@ public class WordTemplateService {
         }
     }
 
-    // ================= HELPERS =================
+    private static String formatOwnerFull(Owner owner) {
+        if (owner == null) return "";
+        StringBuilder sb = new StringBuilder();
+
+        String fio = String.format("%s %s %s",
+                safe(owner.getLastName()),
+                safe(owner.getFirstName()),
+                safe(owner.getMiddleName())).trim();
+        sb.append(fio);
+
+        if (owner.getAddress() != null && !owner.getAddress().isEmpty()) {
+            sb.append(", адрес: ").append(owner.getAddress());
+        }
+
+        String series = safe(owner.getPassportSeries());
+        String number = safe(owner.getPassportNumber());
+        if (!series.isEmpty() || !number.isEmpty()) {
+            sb.append(", паспортные данные: ").append(series).append(", ").append(number);
+        }
+
+        if (owner.getIssuedBy() != null && !owner.getIssuedBy().isEmpty()) {
+            sb.append(", ").append(owner.getIssuedBy());
+        }
+
+        if (owner.getDateOfIssue() != null) {
+            sb.append(", ").append(owner.getDateOfIssue().format(DateTimeUtil.DATE_ONLY_FORMATTER));
+        }
+
+        return sb.toString();
+    }
+
+    private static String formatOwnerFioOnly(Owner owner) {
+        if (owner == null) return "";
+        return String.format("%s %s %s",
+                safe(owner.getLastName()),
+                safe(owner.getFirstName()),
+                safe(owner.getMiddleName())).trim();
+    }
+
+    private static String formatOwnerWithAddress(Owner owner) {
+        if (owner == null) return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append(formatOwnerFioOnly(owner));
+        if (owner.getAddress() != null && !owner.getAddress().isEmpty()) {
+            sb.append(", адрес: ").append(owner.getAddress());
+        }
+        return sb.toString();
+    }
+
+    private static String formatOwnerPassportOnly(Owner owner) {
+        if (owner == null) return "";
+        StringBuilder sb = new StringBuilder();
+        String series = safe(owner.getPassportSeries());
+        String number = safe(owner.getPassportNumber());
+        if (!series.isEmpty() || !number.isEmpty()) {
+            sb.append("паспорт: серия ").append(series).append(", номер ").append(number);
+        }
+        if (owner.getIssuedBy() != null && !owner.getIssuedBy().isEmpty()) {
+            if (sb.length() > 0) sb.append("; ");
+            sb.append("кем выдан: ").append(owner.getIssuedBy());
+        }
+        if (owner.getDateOfIssue() != null) {
+            if (sb.length() > 0) sb.append("; ");
+            sb.append("когда выдан: ").append(owner.getDateOfIssue().format(DateTimeUtil.DATE_ONLY_FORMATTER));
+        }
+        return sb.toString();
+    }
+
+    private static String formatEmployeeFioOnly(Employee emp) {
+        if (emp == null) return "";
+        String initials = "";
+        if (emp.getFirstName() != null && !emp.getFirstName().isEmpty()) {
+            initials += emp.getFirstName().charAt(0) + ".";
+        }
+        if (emp.getMiddleName() != null && !emp.getMiddleName().isEmpty()) {
+            initials += emp.getMiddleName().charAt(0) + ".";
+        }
+        return emp.getLastName() + " " + initials;
+    }
+
+    private static String formatEmployeesAll(List<DocumentEmployeeRelation> employees) {
+        return employees.stream()
+                .map(e -> formatEmployeeShort(e.getEmployee()))
+                .collect(Collectors.joining(", "));
+    }
+    private static String formatEmployeesParticipant(List<DocumentEmployeeRelation> employees) {
+        return employees.stream()
+                .filter(e -> e.getRole() == DocumentEmployeeRole.PARTICIPANT)
+                .map(e -> formatEmployeeShort(e.getEmployee()))
+                .collect(Collectors.joining(", "));
+    }
+
+    private static String formatEmployeeShort(Employee emp) {
+        if (emp == null) return "";
+        String initials = "";
+        if (emp.getFirstName() != null && !emp.getFirstName().isEmpty()) {
+            initials += emp.getFirstName().charAt(0) + ".";
+        }
+        if (emp.getMiddleName() != null && !emp.getMiddleName().isEmpty()) {
+            initials += emp.getMiddleName().charAt(0) + ".";
+        }
+        return emp.getLastName() + " " + initials + " - " + emp.getPosition();
+    }
+
+    private static String formatEmployeesDefault(List<DocumentEmployeeRelation> employees) {
+        return employees.stream()
+                .map(e -> {
+                    Employee emp = e.getEmployee();
+                    return String.format("%s %s %s - %s",
+                            safe(emp.getLastName()),
+                            safe(emp.getFirstName()),
+                            safe(emp.getMiddleName()),
+                            safe(emp.getPosition()));
+                })
+                .collect(Collectors.joining(", "));
+    }
+
+    private static Employee findEmployeeByRole(List<DocumentEmployeeRelation> employees, DocumentEmployeeRole role) {
+        return employees.stream()
+                .filter(e -> e.getRole() == role)
+                .map(DocumentEmployeeRelation::getEmployee)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static String formatEmployeeSignatureLine(Employee emp) {
+        if (emp == null) return "";
+        String position = safe(emp.getPosition());
+        String fio = formatEmployeeFioOnly(emp);
+        return position + " _______________ " + fio;
+    }
+
+    private static String formatPeriod(LocalDate start, LocalDate end) {
+        if (start == null && end == null) return "";
+        if (start != null && end != null) return "с " + start.format(DateTimeUtil.DATE_ONLY_FORMATTER) + " по " + end.format(DateTimeUtil.DATE_ONLY_FORMATTER);
+        if (start != null) return "с " + start.format(DateTimeUtil.DATE_ONLY_FORMATTER);
+        return "по " + end.format(DateTimeUtil.DATE_ONLY_FORMATTER);
+    }
 
     private static String buildNameWithDesc(Exhibit ex) {
         String name = safe(ex.getName());
@@ -277,9 +430,9 @@ public class WordTemplateService {
         addIfNotEmpty(parts, safe(ex.getMaterial()));
         addIfNotEmpty(parts, safe(ex.getTechnique()));
 
-        String l = safe(String.valueOf(ex.getLength()));
-        String w = safe(String.valueOf(ex.getWidth()));
-        String h = safe(String.valueOf(ex.getHeight()));
+        String l = formatDimension(ex.getLength());
+        String w = formatDimension(ex.getWidth());
+        String h = formatDimension(ex.getHeight());
         if (!l.isEmpty() || !w.isEmpty() || !h.isEmpty()) {
             parts.add(String.format("%s × %s × %s", l, w, h));
         }
@@ -295,6 +448,29 @@ public class WordTemplateService {
         return String.join(", ", parts);
     }
 
+    private static String buildMaterialTechnique(Exhibit ex) {
+        List<String> parts = new ArrayList<>();
+        addIfNotEmpty(parts, safe(ex.getMaterial()));
+        addIfNotEmpty(parts, safe(ex.getTechnique()));
+        return String.join(", ", parts);
+    }
+
+    private static String buildFullDescription(Exhibit ex) {
+        List<String> parts = new ArrayList<>();
+        addIfNotEmpty(parts, safe(ex.getName()));
+        addIfNotEmpty(parts, safe(ex.getDescription()));
+        addIfNotEmpty(parts, safe(ex.getDatingMaterial()));
+        addIfNotEmpty(parts, safe(ex.getTechnique()));
+        String l = formatDimension(ex.getLength());
+        String w = formatDimension(ex.getWidth());
+        String h = formatDimension(ex.getHeight());
+        if (!l.isEmpty() || !w.isEmpty() || !h.isEmpty()) {
+            parts.add(String.format("%s × %s × %s %s", l, w, h, safe(ex.getUnitSizes())));
+        }
+        addIfNotEmpty(parts, safe(ex.getInscriptions()));
+        return String.join(", ", parts);
+    }
+
     private static String buildNameWithMaterialAndSize(Exhibit ex) {
         List<String> parts = new ArrayList<>();
         parts.add(buildNameWithDesc(ex));
@@ -303,40 +479,59 @@ public class WordTemplateService {
         return String.join(", ", parts);
     }
 
-    private static String buildExhibitsList(List<Exhibit> exhibits) {
+    private static String buildOwnerWithAddress(Exhibit ex) {
+        Integer ownerId = ex.getOwnerId();
+        if (ownerId == null) {
+            return "Владелец не указан";
+        }
+        Owner foundOwner = null;
+        for (Owner owner : OwnerRepository.getOwners()) {
+            if (owner.getId() == ownerId) {
+                foundOwner = owner;
+                break;
+            }
+        }
+        if (foundOwner != null) {
+            return foundOwner.getFullFio() + ", " + foundOwner.getAddress();
+        } else {
+            return "нет";
+        }
+    }
+
+    private static String buildEmployeeFio(Integer employeeId) {
+        if (employeeId == null) {
+            return "сотрудник не указан";
+        }
+
+        Employee foundEmployee = null;
+        for (Employee employee : EmployeeRepository.getActiveEmployees()) {
+            if (employee.getId() == employeeId) {
+                foundEmployee = employee;
+                break;
+            }
+        }
+
+        if (foundEmployee != null) {
+            return foundEmployee.getFullFio() + " - " + foundEmployee.getPosition();
+        } else {
+            return "нет";
+        }
+    }
+
+    private static String buildExhibitsListWithDesc(List<Exhibit> exhibits) {
         return exhibits.stream()
-                .map(ex -> safe(ex.getName()) + " (1 шт.)")
+                .map(ex -> {
+                    String name = safe(ex.getName());
+                    String desc = safe(ex.getDescription());
+                    return desc.isEmpty() ? name : name + " (" + desc + ")";
+                })
                 .collect(Collectors.joining(", "));
     }
 
-//    private static String formatOwner(Owner owner) {
-//        if (owner == null) return "";
-//        StringBuilder sb = new StringBuilder();
-//        sb.append(safe(owner.getLastName())).append(" ")
-//                .append(safe(owner.getFirstName())).append(" ")
-//                .append(safe(owner.getMiddleName()));
-//        if (owner.getAddress() != null && !owner.getAddress().isEmpty()) {
-//            sb.append(", адрес: ").append(owner.getAddress());
-//        }
-//        if (owner.getPassportSeries() != null && owner.getPassportNumber() != null) {
-//            sb.append(", паспорт: ").append(owner.getPassportSeries()).append(" ").append(owner.getPassportNumber());
-//            if (owner.getIssuedBy() != null) sb.append(", выдан: ").append(owner.getIssuedBy());
-//            if (owner.getDateOfIssue() != null) sb.append(", дата выдачи: ").append(owner.getDateOfIssue().format(DATE_FORMAT));
-//        }
-//        return sb.toString();
-//    }
-
-    private static String formatEmployees(List<Employee> employees) {
-        return employees.stream()
-                .map(e -> safe(e.getLastName()) + " " + safe(e.getFirstName()) + " " + safe(e.getMiddleName()) + " (" + safe(e.getPosition()) + ")")
-                .collect(Collectors.joining(", "));
-    }
-
-    private static String formatPeriod(java.time.LocalDate start, java.time.LocalDate end) {
-        if (start == null && end == null) return "";
-        if (start != null && end != null) return start.format(DATE_FORMAT) + " – " + end.format(DATE_FORMAT);
-        if (start != null) return "с " + start.format(DATE_FORMAT);
-        return "по " + end.format(DATE_FORMAT);
+    private static String formatDimension(Double value) {
+        if (value == null) return "";
+        String str = String.valueOf(value);
+        return str.endsWith(".0") ? str.substring(0, str.length() - 2) : str;
     }
 
     private static void addIfNotEmpty(List<String> list, String value) {
@@ -346,8 +541,6 @@ public class WordTemplateService {
     private static String safe(String v) {
         return v == null ? "" : v;
     }
-
-    // ================= CELL =================
 
     private static void setCell(Tr row, int index, String value) {
         if (row.getContent().size() <= index) return;
@@ -359,15 +552,23 @@ public class WordTemplateService {
         cell.getContent().clear();
 
         P p = new P();
-        R r = new R();
-        if (preservedRPr != null) r.setRPr(org.docx4j.XmlUtils.deepCopy(preservedRPr));
+        String[] lines = safe(value).split("\n");
 
-        Text t = new Text();
-        t.setValue(value);
-        t.setSpace("preserve");
+        for (int i = 0; i < lines.length; i++) {
+            R r = new R();
+            if (preservedRPr != null) r.setRPr(org.docx4j.XmlUtils.deepCopy(preservedRPr));
 
-        r.getContent().add(t);
-        p.getContent().add(r);
+            Text t = new Text();
+            t.setValue(lines[i]);
+            t.setSpace("preserve");
+            r.getContent().add(t);
+
+            p.getContent().add(r);
+
+            if (i < lines.length - 1) {
+                p.getContent().add(new Br());
+            }
+        }
         cell.getContent().add(p);
     }
 

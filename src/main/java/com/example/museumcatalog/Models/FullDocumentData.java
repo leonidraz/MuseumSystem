@@ -6,7 +6,9 @@ public class FullDocumentData {
 
     private Document document;
 
-    private List<Employee> employees;
+    private Owner owner;
+
+    private List<DocumentEmployeeRelation> employees;
     private List<Exhibit> exhibits;
 
     private EfzkData efzkData;
@@ -21,11 +23,19 @@ public class FullDocumentData {
         this.document = document;
     }
 
-    public List<Employee> getEmployees() {
+    public Owner getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Owner owner) {
+        this.owner = owner;
+    }
+
+    public List<DocumentEmployeeRelation> getEmployees() {
         return employees;
     }
 
-    public void setEmployees(List<Employee> employees) {
+    public void setEmployees(List<DocumentEmployeeRelation> employees) {
         this.employees = employees;
     }
 

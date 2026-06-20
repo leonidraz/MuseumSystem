@@ -95,7 +95,11 @@ public class ReferenceBooksRegistrationController {
     }
 
     private void initComboBoxes() throws SQLException {
-        referenceTypeCombo.getItems().addAll("Фонды", "Коллекции", "Должности");
+        referenceTypeCombo.getItems().addAll("Фонды", "Коллекции");
+        boolean isAdmin = Service.getCurrentUser() != null && "Администратор".equals(Service.getCurrentUser().getRole());
+        if (isAdmin) {
+            referenceTypeCombo.getItems().add("Должности");
+        }
         collectionFundCombo.getItems().addAll(service.getValuesComboBox("funds", "fund_name", null));
     }
 
@@ -109,16 +113,12 @@ public class ReferenceBooksRegistrationController {
         saveBtn.setOnAction(actionEvent -> {
             if (referenceTypeCombo.getValue() == null) {
                 service.markFieldAsError(referenceTypeCombo);
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите тип справочника",
-                        "Ошибка");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите тип справочника", "Ошибка");
                 return;
             }
 
             if (!validateRequiredFields()) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Заполните обязательные поля",
-                        "Ошибка");
+                service.openAlert(Alert.AlertType.WARNING, "Заполните обязательные поля", "Ошибка");
                 return;
             }
             boolean isUpdateFund = editingFund != null;
@@ -141,9 +141,7 @@ public class ReferenceBooksRegistrationController {
                             FundRepository.getFunds().add(editingFund);
                         }
                     } else {
-                        service.openAlert(Alert.AlertType.ERROR,
-                                "Ошибка при сохранении данных",
-                                "Неуспешно!");
+                        service.openAlert(Alert.AlertType.ERROR, "Ошибка при сохранении данных", "Неуспешно!");
                     }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -164,9 +162,7 @@ public class ReferenceBooksRegistrationController {
                             CollectionRepository.getCollections().add(editingCollection);
                         }
                     } else {
-                        service.openAlert(Alert.AlertType.ERROR,
-                                "Ошибка при сохранении данных",
-                                "Неуспешно!");
+                        service.openAlert(Alert.AlertType.ERROR, "Ошибка при сохранении данных", "Неуспешно!");
                     }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -185,20 +181,15 @@ public class ReferenceBooksRegistrationController {
                             EmployeePositionRepository.getPositions().add(editingPosition);
                         }
                     } else {
-                        service.openAlert(
-                                Alert.AlertType.ERROR,
-                                "Ошибка при сохранении должности",
-                                "Ошибка"
-                        );
+                        service.openAlert(Alert.AlertType.ERROR, "Ошибка при сохранении должности", "Ошибка");
                     }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
             }
 
-            service.openAlert(Alert.AlertType.INFORMATION,
-                    isUpdateFund || isUpdateCollection || isUpdatePosition ? "Данные успешно обновлены" : "Новый элемент добавлен",
-                    "Успех");
+            service.openAlert(Alert.AlertType.INFORMATION, isUpdateFund || isUpdateCollection || isUpdatePosition ? "Данные успешно обновлены" : "Новый элемент добавлен", "Успех");
+            titleLabel.setText("Редактирование справочника");
         });
     }
 
@@ -236,7 +227,6 @@ public class ReferenceBooksRegistrationController {
             updateFormByType(newVal);
         });
     }
-
     private void updateFormByType(String type) {
         hideAllBlocks();
         if (type == null) return;

@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class AuthLogsFormController {
@@ -47,8 +48,13 @@ public class AuthLogsFormController {
         setupColumns();
         loadLogs();
         initFilters();
-//        setupListeners();
+        setupListeners();
         setupButtonHandlers();
+        try {
+            AuthLogRepository.deleteOldLogs();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void setupColumns() {
@@ -80,11 +86,19 @@ public class AuthLogsFormController {
     }
 
     private void initFilters() {
-        eventTypeFilter.getItems().addAll("Все", "LOGIN", "LOGOUT");
-        eventTypeFilter.setValue("Все");
+        eventTypeFilter.getItems().addAll("Все события", "LOGIN", "LOGOUT");
+        eventTypeFilter.setValue("Все события");
 
-        successFilter.getItems().addAll("Все", "успешно", "неуспешно");
-        successFilter.setValue("Все");
+        successFilter.getItems().addAll("Все попытки", "успешно", "неуспешно");
+        successFilter.setValue("Все попытки");
+    }
+
+    private void setupListeners() {
+        globalSearch.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        eventTypeFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        successFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        dateFrom.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        dateTo.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
 
     private void setupButtonHandlers() {
@@ -93,8 +107,56 @@ public class AuthLogsFormController {
         });
     }
 
+    private void applyFilters() {
+        filteredLogs.setPredicate(log -> {
+            // Поиск логину, IP, пользователю
+            String searchText = globalSearch.getText();
+            if (searchText != null && !searchText.isBlank()) {
+                String q = searchText.toLowerCase().trim();
+                boolean match = contains(log.getLogin(), q)
+                                || contains(log.getUserFio(), q)
+                                || contains(log.getIpAddress(), q);
+                if (!match) {
+                    return false;
+                }
+            }
+            //Фильтр по типу события
+            String eventType = eventTypeFilter.getValue();
+            if (eventType != null && !"Все события".equals(eventType) && !eventType.equals(log.getEventType())) {
+                return false;
+            }
+
+            //Фильтр по типу попытки (успешно/неуспешно)
+            String success = successFilter.getValue();
+            if (success != null && !"Все попытки".equals(success)) {
+                boolean requiredSuccess = "успешно".equals(success);
+                if (log.isSuccess() != requiredSuccess) {
+                    return false;
+                }
+            }
+            //Дата с
+            if (dateFrom.getValue() != null) {
+                if (log.getDateTime() == null || log.getDateTime().toLocalDate().isBefore(dateFrom.getValue())) {
+                    return false;
+                }
+            }
+            //Дата по
+            if (dateTo.getValue() != null) {
+                if (log.getDateTime() == null || log.getDateTime().toLocalDate().isAfter(dateTo.getValue())) {
+                    return false;
+                }
+            }
+            return true;
+        });
+        updateCount();
+    }
+
+    private boolean contains(String value, String query) {
+        return value != null &&
+                value.toLowerCase().contains(query);
+    }
+
     private void updateCount() {
         totalCountLabel.setText("Всего: " + filteredLogs.size());
     }
-
 }

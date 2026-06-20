@@ -22,6 +22,7 @@ public class UserRegistrationFormController {
     @FXML private Button saveBtn;
     @FXML private Button cancelBtn;
     @FXML private Label titleLabel;
+    @FXML private Label passwordTitle;
     @FXML private Label employeeErrorLabel;
 
     private final Service service = new Service();
@@ -55,6 +56,7 @@ public class UserRegistrationFormController {
 
     private void initEditUserForm() throws Exception {
         titleLabel.setText("Редактирование пользователя");
+        passwordTitle.setText("Пароль");
 
         boolean selfEdit = editingUser.getId() == Service.getCurrentUser().getId();
 
@@ -112,20 +114,15 @@ public class UserRegistrationFormController {
     }
 
     private void initButtons() {
-
         cancelBtn.setOnAction(e -> {
             Service.setUser(null);
             ((Stage) cancelBtn.getScene().getWindow()).close();
         });
 
         saveBtn.setOnAction(e -> {
-
             if (!validate()) return;
-
             boolean isUpdate = editingUser != null;
-
             User temp = new User();
-
             if (isUpdate) {
                 temp.setId(editingUser.getId());
             }
@@ -148,7 +145,6 @@ public class UserRegistrationFormController {
 
             try {
                 int result = UserRepository.addOrUpdate(temp);
-
                 if (result > 0) {
                     if (isUpdate) {
                         int index = UserRepository.getUsers().indexOf(editingUser);
@@ -160,7 +156,6 @@ public class UserRegistrationFormController {
                         temp.setId(result);
                         UserRepository.getUsers().add(temp);
                     }
-
                     if (editingUser != null
                             && editingUser.getId() == Service.getCurrentUser().getId()) {
                         Service.setCurrentUser(temp);
@@ -169,24 +164,21 @@ public class UserRegistrationFormController {
 
                     editingUser = temp;
 
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            isUpdate ? "Пользователь обновлён" : "Пользователь добавлен",
-                            "Успех");
+                    service.openAlert(Alert.AlertType.INFORMATION, isUpdate ? "Пользователь обновлён" : "Пользователь добавлен", "Успех");
+                    titleLabel.setText("Редактирование пользователя");
+                    if (!(editingUser.getId() == Service.getCurrentUser().getId())) {
+                        statusCombo.setDisable(false);
+                    }
+                    passwordTitle.setText("Пароль");
                 } else {
-                    service.openAlert(Alert.AlertType.ERROR,
-                            "Ошибка сохранения",
-                            "Неуспешно");
+                    service.openAlert(Alert.AlertType.ERROR, "Ошибка сохранения", "Неуспешно");
                 }
 
             } catch (SQLException ex) {
                 if ("23505".equals(ex.getSQLState())) {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Этот сотрудник уже имеет учетную запись",
-                            "Предупреждение");
+                    service.openAlert(Alert.AlertType.WARNING, "Этот сотрудник уже имеет учетную запись", "Предупреждение");
                 } else {
-                    service.openAlert(Alert.AlertType.ERROR,
-                            "Ошибка БД: " + ex.getMessage(),
-                            "Ошибка");
+                    service.openAlert(Alert.AlertType.ERROR, "Ошибка БД: " + ex.getMessage(), "Ошибка");
                 }
             }
         });

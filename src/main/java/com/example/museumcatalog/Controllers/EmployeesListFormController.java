@@ -34,6 +34,7 @@ public class EmployeesListFormController {
     @FXML private Button createEmployeeBtn;
     @FXML private Button deleteEmployeeBtn;
     @FXML private Button editEmployeeBtn;
+    @FXML private Button refreshBtn;
 
     // Элементы фильтрации/поиска
     @FXML private ComboBox<String> filterEmployeePosition;
@@ -105,56 +106,50 @@ public class EmployeesListFormController {
 
     private Predicate<Employee> getFiltersPredicate() {
         return employee -> {
-
             if (!checkPositionAndStatus(employee)) return false;
             if (!checkSearch(employee)) return false;
-
             return true;
         };
     }
 
     private boolean checkPositionAndStatus(Employee employee) {
-
         String position = filterEmployeePosition.getValue();
         String status = filterEmployeeStatus.getValue();
-
-        if (position != null &&
-                !"Все должности".equals(position) &&
-                !position.equals(employee.getPosition())) {
+        if (position != null && !"Все должности".equals(position) && !position.equals(employee.getPosition())) {
             return false;
         }
-
-        if (status != null &&
-                !"Все статусы".equals(status) &&
-                !status.equals(employee.getStatus())) {
+        if (status != null && !"Все статусы".equals(status) && !status.equals(employee.getStatus())) {
             return false;
         }
-
         return true;
     }
 
     private boolean checkSearch(Employee employee) {
-
         String q = search.getText();
         if (q == null || q.trim().isEmpty()) return true;
-
         String query = q.toLowerCase().trim();
-
-        String fullText =
-                safe(employee.getFullFio()) + " " +
+        String fullText = safe(employee.getFullFio()) + " " +
                         safe(employee.getPosition()) + " " +
                         safe(employee.getEmail()) + " " +
                         safe(employee.getPhone()) + " " +
                         safe(employee.getStatus());
-
         return fullText.toLowerCase().contains(query);
     }
 
     private String safe(String s) {
         return s == null ? "" : s;
     }
-
     private void setupButtonHandlers() {
+        refreshBtn.setOnAction(actionEvent -> {
+            search.clear();
+            filterEmployeePosition.setValue("Все должности");
+            filterEmployeeStatus.setValue("Все статусы");
+            employeesTable.getSelectionModel().clearSelection();
+            employeesTable.getSortOrder().clear();
+            applyFilters();
+            filteredEmployees.setPredicate(doc -> true);
+        });
+
         createEmployeeBtn.setOnAction(actionEvent -> {
             try {
                 Service.openModal("EmployeeRegistrationForm", "Добавление сотрудника",
@@ -177,62 +172,39 @@ public class EmployeesListFormController {
                     throw new RuntimeException(e);
                 }
             } else {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите сотрудника из таблицы для редактирования", "Предупреждение!");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите сотрудника из таблицы для редактирования", "Предупреждение!");
             }
         });
         deleteEmployeeBtn.setOnAction(event -> {
             Employee selected = employeesTable.getSelectionModel().getSelectedItem();
             if (selected == null) {
-                service.openAlert(Alert.AlertType.WARNING,
-                        "Выберите сотрудника из таблицы",
-                        "Предупреждение");
+                service.openAlert(Alert.AlertType.WARNING, "Выберите сотрудника из таблицы", "Предупреждение");
                 return;
             }
-
             try {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                        "Удалить сотрудника:\n" + selected.getFullFio() + "?",
-                        ButtonType.YES, ButtonType.NO);
-
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Удалить сотрудника:\n" + selected.getFullFio() + "?", ButtonType.YES, ButtonType.NO);
                 confirm.setTitle("Подтверждение удаления");
-
                 if (confirm.showAndWait().orElse(ButtonType.NO) != ButtonType.YES) {
                     return;
                 }
-
                 boolean deleted = EmployeeRepository.deleteEmployee(selected.getId());
-
                 if (deleted) {
                     EmployeeRepository.getAllEmployees().remove(selected);
                     applyFilters();
                     updateEmployeesCount();
-
-                    service.openAlert(Alert.AlertType.INFORMATION,
-                            "Сотрудник удалён",
-                            "Успех");
+                    service.openAlert(Alert.AlertType.INFORMATION, "Сотрудник удалён", "Успех");
                 } else {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Сотрудник не найден",
-                            "Ошибка");
+                    service.openAlert(Alert.AlertType.WARNING, "Сотрудник не найден", "Предупреждение!");
                 }
-
             } catch (SQLException ex) {
-
                 if ("23503".equals(ex.getSQLState())) {
-                    service.openAlert(Alert.AlertType.WARNING,
-                            "Нельзя удалить сотрудника: он связан с учетной записью или другими данными",
-                            "Ошибка удаления");
+                    service.openAlert(Alert.AlertType.WARNING, "Нельзя удалить сотрудника: он связан с учетной записью или другими данными", "Предупреждение!");
                     return;
                 }
-
-                service.openAlert(Alert.AlertType.ERROR,
-                        "Ошибка базы данных: " + ex.getMessage(),
-                        "Ошибка");
+                service.openAlert(Alert.AlertType.ERROR, "Ошибка базы данных: " + ex.getMessage(), "Ошибка");
             }
         });
     }
-
     private void updateEmployeesCount() {
         totalCountLabel.setText("Всего: " + filteredEmployees.size());
     }

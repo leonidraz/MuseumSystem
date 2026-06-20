@@ -7,6 +7,7 @@ import com.example.museumcatalog.Service;
 import com.example.museumcatalog.Storages.EmployeeRepository;
 import com.example.museumcatalog.Storages.ExhibitRepository;
 import com.example.museumcatalog.Storages.OwnerRepository;
+import javafx.animation.ScaleTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -22,6 +23,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -36,6 +38,7 @@ public class MainFormController {
     @FXML private Button btnRegisterExhibit;
     @FXML private Button btnRegisterOwner;
     @FXML private Button btnCreateDocument;
+    @FXML private Button btnAddEmployee;
 
     // Статистические лейблы
     @FXML private Label processedCountLabel;
@@ -44,7 +47,6 @@ public class MainFormController {
     @FXML private Label ownersCountLabel;
     @FXML private Label employeesCountLabel;
 
-    // Ссылки на контейнеры в нижней панели FXML
     @FXML private HBox exhibitsContainer;
     @FXML private VBox bottomVBox;
 
@@ -55,10 +57,17 @@ public class MainFormController {
     public static final String STATUS_ON_EXHIBITION = "На выставке";
 
     public void initialize() throws SQLException {
+        btnAddEmployee.setVisible(false);
+        btnAddEmployee.setManaged(false);
+
+        addHoverAnimation(btnRegisterExhibit);
+        addHoverAnimation(btnRegisterOwner);
+        addHoverAnimation(btnCreateDocument);
+        addHoverAnimation(btnAddEmployee);
+
+        service.setupAccessRights(btnAddEmployee);
         loadStatistics();
-//        loadExhibits();
         loadLastExhibits();
-//        setupListeners();
         setupButtonHandlers();
     }
 
@@ -114,22 +123,18 @@ public class MainFormController {
         processedCountLabel.setText(String.valueOf(inProcessing));
         inFundsCountLabel.setText(String.valueOf(inFunds));
         exhibitionsCountLabel.setText(String.valueOf(onExhibition));
-
-        ownersCountLabel.setText(
-                String.valueOf(OwnerRepository.getOwners().size())
-        );
-
-        employeesCountLabel.setText(
-                String.valueOf(EmployeeRepository.getActiveEmployees().size())
-        );
+        ownersCountLabel.setText(String.valueOf(OwnerRepository.getOwners().size()));
+        employeesCountLabel.setText(String.valueOf(EmployeeRepository.getActiveEmployees().size()));
     }
 
     private void setupButtonHandlers() {
         btnRegisterExhibit.setOnAction(actionEvent -> {
+            Service.setExhibit(null);
             try {
-                Service.openModal("ExhibitRegistrationForm", "Регистрация экспоната",
+                Service.openModal("ExhibitRegistrationForm", "Регистрация предмета",
                         (Stage) btnRegisterExhibit.getScene().getWindow());
-            loadStatistics();
+                loadStatistics();
+                loadLastExhibits();
             } catch (IOException | SQLException e) {
                 service.openAlert(Alert.AlertType.ERROR, "Не удалось открыть форму", "Ошибка");
             }
@@ -138,7 +143,7 @@ public class MainFormController {
             try {
                 Service.openModal("OwnerRegistrationForm", "Регистрация владельца",
                         (Stage) btnRegisterExhibit.getScene().getWindow());
-            loadStatistics();
+                loadStatistics();
             } catch (IOException | SQLException e) {
                 service.openAlert(Alert.AlertType.ERROR, "Не удалось открыть форму", "Ошибка");
             }
@@ -147,10 +152,33 @@ public class MainFormController {
             try {
                 Service.openModal("UniversalDocumentForm", "Создание документа",
                         (Stage) btnRegisterExhibit.getScene().getWindow());
-            loadStatistics();
+                loadStatistics();
             } catch (IOException | SQLException e) {
                 service.openAlert(Alert.AlertType.ERROR, "Не удалось открыть форму", "Ошибка");
             }
         });
+        btnAddEmployee.setOnAction(actionEvent -> {
+            try {
+                Service.openModal("EmployeeRegistrationForm", "Добавление сотрудника",
+                        (Stage) btnAddEmployee.getScene().getWindow());
+                loadStatistics();
+            } catch (IOException | SQLException e) {
+                service.openAlert(Alert.AlertType.ERROR, "Не удалось открыть форму", "Ошибка");
+            }
+        });
+    }
+
+    //Метод для плавного выделения кнопок на панели быстрого доступа при наведении
+    private void addHoverAnimation(Button button) {
+        ScaleTransition enter = new ScaleTransition(Duration.millis(150), button);
+        enter.setToX(1.02);
+        enter.setToY(1.02);
+
+        ScaleTransition exit = new ScaleTransition(Duration.millis(150), button);
+        exit.setToX(1);
+        exit.setToY(1);
+
+        button.setOnMouseEntered(e -> enter.playFromStart());
+        button.setOnMouseExited(e -> exit.playFromStart());
     }
 }

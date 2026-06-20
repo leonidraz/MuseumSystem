@@ -16,15 +16,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class AuthorizationFormController {
-
     @FXML
     private Button enterBtn;
-
     @FXML
     private TextField loginTF;
-
     @FXML
     private PasswordField passwordTF;
+
     Service service = new Service();
 
     public void initialize() {

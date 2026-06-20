@@ -21,8 +21,6 @@ public class ExhibitCardController {
 
     @FXML private VBox rootCard;
     @FXML private ImageView imageView;
-    @FXML private Rectangle placeholder;
-
     @FXML private Label nameLabel;
     @FXML private Label dateLabel;
     @FXML private Label statusLabel;
@@ -55,13 +53,10 @@ public class ExhibitCardController {
 
     public void setData(Exhibit exhibit) {
         this.exhibit = exhibit;
-
         nameLabel.setText(exhibit.getName());
         dateLabel.setText("Дата поступления: " + exhibit.getArrivalDate());
         statusLabel.setText("Статус: " + exhibit.getStatus());
-        statusLabel.setStyle(
-                "-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: "
-                        + getStatusColor(exhibit.getStatus()));
+        statusLabel.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: " + getStatusColor(exhibit.getStatus()));
         loadImage();
     }
 

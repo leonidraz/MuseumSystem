@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -8,8 +7,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.transform.Scale?>
 
-<BorderPane prefHeight="888.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.MainFormController">
+<BorderPane prefHeight="888.0" prefWidth="1920.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.museumcatalog.Controllers.MainFormController">
     <padding>
         <Insets left="40.0" right="40.0" />
     </padding>
@@ -21,22 +21,22 @@
                     <VBox.margin><Insets /></VBox.margin>
                 </Label>
 
-                <Button fx:id="btnRegisterExhibit" mnemonicParsing="false" prefHeight="100.0" prefWidth="545.0" style="-fx-font-size: 20px; -fx-background-color: #F8F9FA; -fx-background-radius: 10px;" text="Зарегистрировать предмет">
+                <Button fx:id="btnRegisterExhibit" mnemonicParsing="false" prefHeight="100.0" prefWidth="545.0" styleClass="quick-access-button" text="Зарегистрировать предмет">
                     <VBox.margin><Insets left="10.0" /></VBox.margin>
                 </Button>
 
-                <Button fx:id="btnRegisterOwner" mnemonicParsing="false" prefHeight="100.0" prefWidth="545.0" style="-fx-font-size: 20px; -fx-background-color: #7CB4CF; -fx-background-radius: 10px; -fx-text-fill: white;" text="Зарегистрировать владельца">
+                <Button fx:id="btnRegisterOwner" mnemonicParsing="false" prefHeight="100.0" prefWidth="545.0" styleClass="quick-access-button" text="Зарегистрировать владельца">
                     <VBox.margin><Insets left="10.0" /></VBox.margin>
                 </Button>
 
-                <Button fx:id="btnCreateDocument" mnemonicParsing="false" prefHeight="100.0" prefWidth="695.0" style="-fx-font-size: 20px; -fx-background-color: #F8F9FA; -fx-background-radius: 10px;" text="Создать документ">
+                <Button fx:id="btnCreateDocument" mnemonicParsing="false" prefHeight="100.0" prefWidth="695.0" styleClass="quick-access-button" text="Создать документ">
                     <VBox.margin><Insets left="10.0" /></VBox.margin>
                 </Button>
-            <Button fx:id="btnCreateDocument1" mnemonicParsing="false" prefHeight="100.0" prefWidth="1055.0" style="-fx-font-size: 20px; -fx-background-color: #F8F9FA; -fx-background-radius: 10px;" text="Добавить сотрудника">
-               <VBox.margin>
-                  <Insets left="10.0" />
-               </VBox.margin>
-            </Button>
+                <Button fx:id="btnAddEmployee" mnemonicParsing="false" prefHeight="100.0" prefWidth="1055.0" styleClass="quick-access-button" text="Добавить сотрудника">
+                    <VBox.margin>
+                        <Insets left="10.0" />
+                    </VBox.margin>
+                </Button>
             </children>
             <BorderPane.margin><Insets left="20.0" /></BorderPane.margin>
         </VBox>
@@ -59,12 +59,12 @@
                         <Label fx:id="inFundsCountLabel" style="-fx-font-size: 55px; -fx-font-weight: bold; -fx-text-fill: #00BCD4;" text="37" />
                         <Label prefHeight="28.0" prefWidth="90.0" style="-fx-font-size: 20px; -fx-text-fill: #555555;" text="В фондах" />
                     </VBox>
-               <VBox alignment="CENTER" minWidth="162.0" prefHeight="179.0" prefWidth="162.0" spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 28px; -fx-min-width: 210px; -fx-max-width: 250px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);">
-                  <children>
-                     <Label fx:id="exhibitionsCountLabel" style="-fx-font-size: 55px; -fx-font-weight: bold; -fx-text-fill: #FF5722;" text="7" />
-                     <Label prefHeight="30.0" prefWidth="124.0" style="-fx-font-size: 20px; -fx-text-fill: #555555;" text="На выставках" />
-                  </children>
-               </VBox>
+                    <VBox alignment="CENTER" minWidth="162.0" prefHeight="179.0" prefWidth="162.0" spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 28px; -fx-min-width: 210px; -fx-max-width: 250px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);">
+                        <children>
+                            <Label fx:id="exhibitionsCountLabel" style="-fx-font-size: 55px; -fx-font-weight: bold; -fx-text-fill: #FF5722;" text="7" />
+                            <Label prefHeight="30.0" prefWidth="124.0" style="-fx-font-size: 20px; -fx-text-fill: #555555;" text="На выставках" />
+                        </children>
+                    </VBox>
 
                     <VBox alignment="CENTER" spacing="12.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 28px; -fx-min-width: 210px; -fx-max-width: 250px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);">
                         <Label fx:id="employeesCountLabel" style="-fx-font-size: 55px; -fx-font-weight: bold; -fx-text-fill: #9C27B0;" text="24" />
@@ -83,7 +83,6 @@
         </VBox>
     </center>
 
-    <!-- НИЖНЯЯ ПАНЕЛЬ: Карусель экспонатов (на всю ширину) -->
     <bottom>
         <VBox prefHeight="447.0" prefWidth="1885.0" style="-fx-background-color: #EBEFF0; -fx-background-radius: 10px; -fx-padding: 30px;">
             <children>
@@ -91,55 +90,6 @@
                     <content>
                         <HBox fx:id="exhibitsContainer" prefWidth="2065.0" spacing="25.0" style="-fx-padding: 10px;">
 
-                            <!-- Карточка 1 -->
-                            <VBox alignment="CENTER" prefWidth="320.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 24px; -fx-min-width: 320px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
-                                <Rectangle arcHeight="12" arcWidth="12" fill="#E0E0E0" height="160.0" width="280.0" />
-                                <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #333333;" text="Древний артефакт" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #666666;" text="Дата регистрации: 22.03.2023" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #607D8B; -fx-font-weight: bold;" text="Статус: В обработке" />
-                            </VBox>
-
-                            <!-- Карточка 2 -->
-                            <VBox alignment="CENTER" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 24px; -fx-min-width: 320px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
-                                <Rectangle arcHeight="12" arcWidth="12" fill="#E0E0E0" height="160.0" width="280.0" />
-                                <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #333333;" text="Старинная карта" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #666666;" text="Дата регистрации: 23.03.2023" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #2196F3; -fx-font-weight: bold;" text="Статус: На временном хранении" />
-                            </VBox>
-
-                            <!-- Карточка 3 -->
-                            <VBox alignment="CENTER" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 24px; -fx-min-width: 320px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
-                                <Rectangle arcHeight="12" arcWidth="12" fill="#E0E0E0" height="160.0" width="280.0" />
-                                <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #333333;" text="Редкая монета" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #666666;" text="Дата регистрации: 24.03.2023" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #607D8B; -fx-font-weight: bold;" text="Статус: В обработке" />
-                            </VBox>
-
-                            <!-- Карточка 4 -->
-                            <VBox alignment="CENTER" prefWidth="320.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 24px; -fx-min-width: 320px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
-                                <Rectangle arcHeight="12" arcWidth="12" fill="#E0E0E0" height="160.0" width="280.0" />
-                                <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #333333;" text="Скульптура" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #666666;" text="Дата регистрации: 24.03.2023" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #FF9800; -fx-font-weight: bold;" text="Статус: На рассмотрении ЭФЗК" />
-                            </VBox>
-
-                            <!-- Карточка 5 -->
-                            <VBox alignment="CENTER" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 24px; -fx-min-width: 320px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
-                                <Rectangle arcHeight="12" arcWidth="12" fill="#E0E0E0" height="160.0" width="280.0" />
-                                <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #333333;" text="Керамическая ваза" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #666666;" text="Дата регистрации: 25.03.2023" />
-                                <Label style="-fx-font-size: 15px; -fx-text-fill: #00BCD4; -fx-font-weight: bold;" text="Статус: В фонде" />
-                            </VBox>
-
-                            <!-- Карточка 6 -->
-                            <VBox alignment="CENTER" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15px; -fx-padding: 24px; -fx-min-width: 320px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
-                                <children>
-                                    <Rectangle arcHeight="12" arcWidth="12" fill="#E0E0E0" height="160.0" width="280.0" />
-                                    <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #333333;" text="Старинный сосуд" />
-                                    <Label style="-fx-font-size: 15px; -fx-text-fill: #666666;" text="Дата регистрации: 26.03.2023" />
-                                    <Label style="-fx-font-size: 15px; -fx-text-fill: #2196F3; -fx-font-weight: bold;" text="Статус: В обработке" />
-                                </children>
-                            </VBox>
                         </HBox>
                     </content>
                 </ScrollPane>
